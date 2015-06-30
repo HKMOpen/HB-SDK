@@ -26,11 +26,12 @@ public class AuthorizeUtils {
      */
     public static Intent createIntent(Context context, String apiKey, String[] scopes,
                                       String redirectUri) {
-        Intent intent = new Intent(context, AuthorizeActivity.class);
+      //  Intent intent = new Intent(context, AuthorizeActivity.class);
+        Intent intent = new Intent(context, AuthorizeUtils.class);
         Bundle extras = new Bundle();
-        extras.putString(AuthorizeActivity.EXTRA_API_KEY, apiKey);
+     /*   extras.putString(AuthorizeActivity.EXTRA_API_KEY, apiKey);
         extras.putStringArray(AuthorizeActivity.EXTRA_SCOPES, scopes);
-        extras.putString(AuthorizeActivity.EXTRA_REDIRECT_URI, redirectUri);
+        extras.putString(AuthorizeActivity.EXTRA_REDIRECT_URI, redirectUri);*/
         intent.putExtras(extras);
         return intent;
     }
