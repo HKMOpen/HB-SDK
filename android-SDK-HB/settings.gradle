@@ -1,1 +1,1 @@
-include ':hbsdk'
+include ':library'
