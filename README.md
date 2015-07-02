@@ -1,4 +1,4 @@
-# Hypebeast-Android-SDK
+# HBAndroid-SDK
 =========
 [![Build Status](https://travis-ci.org/HKMOpen/SDKhb.svg)](https://travis-ci.org/HKMOpen/SDKhb)
 This SDK will be developed on going bases
