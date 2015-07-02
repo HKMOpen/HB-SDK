@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:pixlui="http://schemas.android.com/apk/com.neopixl.pixlui"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/imageholder"
+        android:layout_width="match_parent"
+        android:layout_height="240dp"
+        android:scaleType="fitCenter" />
+
+    <com.neopixl.pixlui.components.textview.TextView
+        android:id="@+id/product_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/imageholder"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="10dp"
+        android:gravity="left"
+        android:singleLine="true"
+        android:textSize="12sp"
+        pixlui:typeface="HelveticaNeue.ttf" />
+
+    <com.neopixl.pixlui.components.textview.TextView
+        android:id="@+id/product_short_desc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/product_title"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:gravity="left"
+        android:maxLines="2"
+        android:singleLine="false"
+        android:textSize="12sp"
+        pixlui:typeface="HelveticaNeueUltraLight.ttf" />
+
+    <View
+        android:id="@+id/space"
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:layout_below="@id/product_short_desc" />
+
+    <com.neopixl.pixlui.components.textview.TextView
+        android:id="@+id/final_price"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/space"
+        android:layout_marginBottom="20dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:gravity="left"
+        android:singleLine="true"
+        android:textColor="@color/text_color_price"
+        android:textSize="12sp"
+        pixlui:typeface="HelveticaNeue.ttf" />
+
+</RelativeLayout>
