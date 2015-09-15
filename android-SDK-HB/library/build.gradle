@@ -1,14 +1,14 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion "22.0.1"
+    compileSdkVersion Integer.parseInt(ANDROID_BUILD_SDK_VERSION)
+    buildToolsVersion ANDROID_BUILD_TOOLS_VERSION
 
     defaultConfig {
-        minSdkVersion 17
-        targetSdkVersion 22
-        versionCode 1
-        versionName "1.0"
+        minSdkVersion project.ANDROID_BUILD_MIN_SDK_VERSION
+        targetSdkVersion project.ANDROID_BUILD_TARGET_SDK_VERSION
+        versionCode Integer.parseInt(project.VERSION_CODE)
+        versionName project.VERSION_NAME
     }
     buildTypes {
         release {
@@ -29,3 +29,5 @@ dependencies {
     compile 'io.realm:realm-android:0.81.1'
     compile 'org.ocpsoft.prettytime:prettytime:3.2.7.Final'
 }
+
+apply from: './br.gradle'
