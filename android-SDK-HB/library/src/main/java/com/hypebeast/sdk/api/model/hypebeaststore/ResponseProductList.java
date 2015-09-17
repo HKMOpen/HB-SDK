@@ -19,7 +19,7 @@ public class ResponseProductList extends Alternative {
     @SerializedName("pages")
     private int pages;
     @SerializedName("total")
-    private int total;
+    public int total;
     @SerializedName("_embedded")
     private embededList embededitems;
     @SerializedName("facets")

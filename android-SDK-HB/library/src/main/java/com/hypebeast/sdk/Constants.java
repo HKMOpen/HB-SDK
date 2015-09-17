@@ -41,7 +41,6 @@ public class Constants {
      */
     public static final String RESPONSE_TYPE_TOKEN = "token";
     public static final String RESPONSE_TYPE_CODE = "code";
-
     /**
      * Date format
      */
