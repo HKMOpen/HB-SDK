@@ -7,9 +7,9 @@ import com.google.gson.annotations.SerializedName;
  */
 public class ProductGroupContainer {
     @SerializedName("href")
-    private String href;
+    public String href;
     @SerializedName("title")
-    private String title;
+    public String title;
 
 
 }
