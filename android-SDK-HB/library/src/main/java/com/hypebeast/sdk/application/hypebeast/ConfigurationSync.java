@@ -3,6 +3,7 @@ package com.hypebeast.sdk.application.hypebeast;
 import android.app.Application;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 import com.hypebeast.sdk.Constants;
 import com.hypebeast.sdk.api.exception.ApiException;
@@ -11,6 +12,10 @@ import com.hypebeast.sdk.api.model.hbeditorial.configbank;
 import com.hypebeast.sdk.api.resources.hypebeast.feedhost;
 import com.hypebeast.sdk.clients.HBEditorialClient;
 
+import org.apache.commons.io.IOUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -28,6 +33,7 @@ public class ConfigurationSync {
     private final Application app;
     private Realm realm;
     public static final String PREFERENCE_FOUNDATION = "foundationfile";
+    public static final String PREFERENCE_CSS = "main_css_file";
     public static final String PREFERENCE_FOUNDATION_REGISTRATION = "regtime";
     private feedhost clientRequest;
     private Foundation mFoundation;
@@ -97,6 +103,22 @@ public class ConfigurationSync {
             }
         }*/
         if (mListener != null) mListener.syncDone(instance, mFoundation);
+    }
+
+    private void syncCSS() {
+        try {
+            InputStream inputStream = clientRequest.css_file().body().byteStream();
+            String theString = IOUtils.toString(inputStream, "UTF-8");
+            PreferenceManager.getDefaultSharedPreferences(app)
+                    .edit()
+                    .putString(PREFERENCE_CSS, theString)
+                    .commit();
+
+        } catch (ApiException e) {
+            Log.d("error", e.getMessage());
+        } catch (IOException e) {
+            Log.d("error", e.getMessage());
+        }
     }
 
     private void syncWorkerThread() {

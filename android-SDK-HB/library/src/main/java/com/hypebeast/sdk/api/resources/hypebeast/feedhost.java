@@ -4,6 +4,7 @@ import com.hypebeast.sdk.api.exception.ApiException;
 import com.hypebeast.sdk.api.model.hbeditorial.Foundation;
 import com.hypebeast.sdk.api.model.hbeditorial.ResponsePostFromSearch;
 import com.hypebeast.sdk.api.model.hbeditorial.ResponsePostW;
+import com.squareup.okhttp.Response;
 
 import retrofit.Callback;
 import retrofit.http.GET;
@@ -60,4 +61,8 @@ public interface feedhost {
             final Callback<Foundation> cb
     ) throws ApiException;
 
+
+    //http://hypebeast.com/bundles/hypebeasteditorial/app/main.css
+    @GET("/bundles/hypebeasteditorial/app/main.css")
+    Response css_file() throws ApiException;
 }
