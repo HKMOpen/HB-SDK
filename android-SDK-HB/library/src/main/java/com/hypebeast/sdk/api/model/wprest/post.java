@@ -1,15 +1,8 @@
 package com.hypebeast.sdk.api.model.wprest;
 
 import com.google.gson.annotations.SerializedName;
-import com.hypebeast.sdk.clients.PBEditorialClient;
-
-import org.ocpsoft.prettytime.PrettyTime;
 
 import java.sql.Date;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Locale;
-
 /**
  * Created by hesk on 3/7/15.
  */
