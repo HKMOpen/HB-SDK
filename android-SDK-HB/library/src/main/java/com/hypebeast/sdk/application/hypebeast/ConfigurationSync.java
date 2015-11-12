@@ -2,6 +2,8 @@ package com.hypebeast.sdk.application.hypebeast;
 
 import android.app.Application;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -14,11 +16,18 @@ import com.hypebeast.sdk.clients.HBEditorialClient;
 
 import org.apache.commons.io.IOUtils;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Random;
 
 import io.realm.Realm;
 import retrofit.Callback;
@@ -44,9 +53,12 @@ public class ConfigurationSync {
     public static ConfigurationSync with(Application app, sync mListener) {
         if (instance == null) {
             instance = new ConfigurationSync(app, mListener);
+            instance.syncCSS();
             instance.init();
+
         } else {
             instance.addInterface(mListener);
+            instance.syncCSS();
             instance.init();
         }
 
@@ -105,20 +117,59 @@ public class ConfigurationSync {
         if (mListener != null) mListener.syncDone(instance, mFoundation);
     }
 
-    private void syncCSS() {
-        try {
-            InputStream inputStream = clientRequest.css_file().body().byteStream();
-            String theString = IOUtils.toString(inputStream, "UTF-8");
-            PreferenceManager.getDefaultSharedPreferences(app)
-                    .edit()
-                    .putString(PREFERENCE_CSS, theString)
-                    .commit();
 
-        } catch (ApiException e) {
-            Log.d("error", e.getMessage());
-        } catch (IOException e) {
-            Log.d("error", e.getMessage());
+    private void syncCSS() {
+        FileDownloader f = new FileDownloader();
+        f.execute("http://hypebeast.com/bundles/hypebeasteditorial/app/main.css");
+    }
+
+    private class FileDownloader extends AsyncTask<String, Void, String> {
+        private Exception exception;
+        private String file_path = "";
+
+        private File createFile() throws Exception {
+            String root = Environment.getExternalStorageDirectory().toString();
+            File myDir = new File(root + "/hypetrak");
+            myDir.mkdirs();
+            Random generator = new Random();
+            int n = 10000;
+            n = generator.nextInt(n);
+            //  String fname = "Image-" + n + ".jpg";
+            file_path = "css_name";
+            File file = new File(myDir, file_path);
+            if (file.exists()) file.delete();
+            return file;
         }
+
+        @Override
+        protected String doInBackground(String... params) {
+
+            try {
+                URL website = new URL(params[0]);
+                ReadableByteChannel rbc = Channels.newChannel(website.openStream());
+                FileOutputStream fos = new FileOutputStream(createFile());
+                fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+                //      Reader inputStream = clientRequest.css_file().cacheResponse().body().charStream();
+                // String theString = IOUtils.toString(inputStream, "UTF-8");
+                //     String targetString = IOUtils.toString(inputStream);
+            /*  PreferenceManager.getDefaultSharedPreferences(app)
+                    .edit()
+                    .putString(PREFERENCE_CSS, targetString)
+                    .commit();*/
+                return file_path;
+            } catch (IOException e) {
+                Log.d("error", e.getMessage());
+            } catch (Exception e) {
+                Log.d("error", e.getMessage());
+            } finally {
+                return file_path;
+            }
+        }
+
+        protected void onPostExecute(String feed) {
+
+        }
+
     }
 
     private void syncWorkerThread() {
@@ -147,7 +198,7 @@ public class ConfigurationSync {
 
                 @Override
                 public void failure(RetrofitError error) {
-
+                    Log.d("faa", error.getMessage());
                 }
             });
         } catch (ApiException e) {

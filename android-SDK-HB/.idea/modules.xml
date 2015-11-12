@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/android-SDK-HB.iml" filepath="$PROJECT_DIR$/android-SDK-HB.iml" />
+      <module fileurl="file://$PROJECT_DIR$/hbeditorialtest/hbeditorialtest.iml" filepath="$PROJECT_DIR$/hbeditorialtest/hbeditorialtest.iml" />
       <module fileurl="file://$PROJECT_DIR$/library/library.iml" filepath="$PROJECT_DIR$/library/library.iml" />
     </modules>
   </component>
