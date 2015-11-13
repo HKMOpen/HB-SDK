@@ -5,6 +5,8 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.telephony.TelephonyManager;
 
 /**
@@ -31,7 +33,7 @@ public class Connectivity {
      * @param context from the activity
      * @return boolean
      */
-    public static boolean isConnected(Context context) {
+    public static boolean isConnected(@NonNull Context context) {
         NetworkInfo info = Connectivity.getNetworkInfo(context);
         return (info != null && info.isConnected());
     }

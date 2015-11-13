@@ -5,6 +5,7 @@ import android.os.Build;
 
 import com.google.gson.GsonBuilder;
 import com.hypebeast.sdk.Constants;
+import com.hypebeast.sdk.Util.Connectivity;
 import com.hypebeast.sdk.Util.CookieHanger;
 import com.hypebeast.sdk.api.gson.GsonFactory;
 import com.hypebeast.sdk.api.gson.MissingCharacterConversion;
@@ -20,21 +21,24 @@ import com.hypebeast.sdk.api.resources.hbstore.Brand;
 import com.hypebeast.sdk.api.resources.hbstore.Overhead;
 import com.hypebeast.sdk.api.resources.hbstore.Products;
 import com.hypebeast.sdk.api.resources.hbstore.SingleProduct;
+import com.squareup.okhttp.OkHttpClient;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import io.realm.Realm;
 import io.realm.RealmQuery;
 import io.realm.RealmResults;
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
+import retrofit.client.OkClient;
 import retrofit.converter.GsonConverter;
 
 /**
  * Created by hesk on 30/6/15.
  */
 public class HBStoreApiClient extends Client {
-
     /**
      * Base URL for all Disqus endpoints
      */
@@ -52,10 +56,16 @@ public class HBStoreApiClient extends Client {
     private RestAdapter mLoginAdapter;
     private static HBStoreApiClient static_instance;
 
+    @Deprecated
     public static HBStoreApiClient newInstance() {
         return new HBStoreApiClient();
     }
 
+    public static HBStoreApiClient newInstance(Context context) {
+        return new HBStoreApiClient(context);
+    }
+
+    @Deprecated
     public static HBStoreApiClient getInstance() {
         if (static_instance == null) {
             static_instance = newInstance();
@@ -65,20 +75,34 @@ public class HBStoreApiClient extends Client {
         }
     }
 
+    public static HBStoreApiClient getInstance(Context context) {
+        if (static_instance == null) {
+            static_instance = newInstance(context);
+            return static_instance;
+        } else {
+            static_instance.setContext(context);
+            return static_instance;
+        }
+    }
+
     public HBStoreApiClient() {
         super();
     }
 
+    public HBStoreApiClient(Context context) {
+        super(context);
+    }
+
+    private void setContext(Context c) {
+        this.context = c;
+    }
 
     @Override
     protected void registerAdapter() {
-        mAdapter = new RestAdapter.Builder()
-                .setEndpoint(BASE_URL_STORE)
-                .setLogLevel(RestAdapter.LogLevel.HEADERS)
-                .setErrorHandler(handlerError)
-                .setRequestInterceptor(getIn())
-                .setConverter(new GsonConverter(gsonsetup))
-                .build();
+        buildCompletCacheRestAdapter(
+                BASE_URL_STORE,
+                context,
+                RestAdapter.LogLevel.FULL);
     }
 
     @Override
@@ -90,10 +114,6 @@ public class HBStoreApiClient extends Client {
     protected void jsonCreate() {
         gsonsetup = new GsonBuilder()
                 .setDateFormat(Constants.DATE_FORMAT)
-   /*             .registerTypeAdapter(Usage.class, new ApplicationsUsageDeserializer())
-                .registerTypeAdapterFactory(new BlacklistsEntryTypeAdapterFactory())
-                .registerTypeAdapterFactory(new PostTypeAdapterFactory())
-                .registerTypeAdapterFactory(new ThreadTypeAdapterFactory())*/
                 .registerTypeAdapterFactory(new GsonFactory.NullStringToEmptyAdapterFactory())
                 .registerTypeAdapter(String.class, new WordpressConversion())
                 .setExclusionStrategies(new RealmExclusion())
@@ -150,6 +170,8 @@ public class HBStoreApiClient extends Client {
         return CookieHanger.base(BASE_URL_STORE);
     }
 
+
+
     @Override
     protected RequestInterceptor getIn() {
         return new RequestInterceptor() {
@@ -159,6 +181,15 @@ public class HBStoreApiClient extends Client {
                 request.addHeader("Accept", "application/json");
                 request.addHeader("X-Api-Version", "2.0");
                 request.addHeader("Cookie", getCookieClient().getRaw());
+                try {
+                    if (Connectivity.isConnected(context)) {
+                        request.addHeader("Cache-Control", "public, max-age=" + timeByMins(1));
+                    } else {
+                        request.addHeader("Cache-Control", "public, only-if-cached, max-stale=" + timeByWeeks(1));
+                    }
+                } catch (Exception e) {
+
+                }
             }
         };
     }
@@ -169,7 +200,6 @@ public class HBStoreApiClient extends Client {
      * @return the count in number
      */
     public int retrieve_current_shopping_cart_items() {
-
         String number = getCookieClient().getValue("_store_item_count");
         return Integer.parseInt(number);
     }

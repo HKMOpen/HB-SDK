@@ -36,7 +36,7 @@ dependencies {
     compile 'com.squareup.retrofit:retrofit:1.9.0'
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'org.jsoup:jsoup:1.8.3'
-    compile 'io.realm:realm-android:0.84.1'
+    compile 'io.realm:realm-android:0.84.2'
     compile 'org.ocpsoft.prettytime:prettytime:3.2.7.Final'
 }
 

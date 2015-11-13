@@ -158,7 +158,6 @@ public class ConfigurationSync {
                 .edit()
                 .putString(tag, data)
                 .commit();
-
     }
 
     private String load(final String tag) {

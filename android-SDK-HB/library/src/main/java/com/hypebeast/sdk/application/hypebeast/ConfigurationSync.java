@@ -6,21 +6,20 @@ import android.os.AsyncTask;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.webkit.WebResourceResponse;
 
 import com.hypebeast.sdk.Constants;
 import com.hypebeast.sdk.api.exception.ApiException;
 import com.hypebeast.sdk.api.model.hbeditorial.Foundation;
 import com.hypebeast.sdk.api.model.hbeditorial.configbank;
 import com.hypebeast.sdk.api.resources.hypebeast.feedhost;
+import com.hypebeast.sdk.Util.UrlCache;
+import com.hypebeast.sdk.clients.Client;
 import com.hypebeast.sdk.clients.HBEditorialClient;
-
-import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -44,21 +43,22 @@ public class ConfigurationSync {
     public static final String PREFERENCE_FOUNDATION = "foundationfile";
     public static final String PREFERENCE_CSS = "main_css_file";
     public static final String PREFERENCE_FOUNDATION_REGISTRATION = "regtime";
+    private static final String CSS_TARGET = "http://hypebeast.com/bundles/hypebeasteditorial/app/main.css";
     private feedhost clientRequest;
     private Foundation mFoundation;
     private HBEditorialClient client;
     private ArrayList<sync> mListeners = new ArrayList<>();
     private sync mListener;
+    private UrlCache mUrlCache;
+    private LoadCacheCss cssLoader;
 
     public static ConfigurationSync with(Application app, sync mListener) {
         if (instance == null) {
             instance = new ConfigurationSync(app, mListener);
-            instance.syncCSS();
             instance.init();
 
         } else {
             instance.addInterface(mListener);
-            instance.syncCSS();
             instance.init();
         }
 
@@ -106,70 +106,44 @@ public class ConfigurationSync {
         //mListeners.clear();
     }
 
-    private void executeListeners() {
-       /*   if (mListeners.size() > 0) {
-            Iterator<sync> lis = mListeners.iterator();
-            while (lis.hasNext()) {
-                sync listener = lis.next();
-                listener.syncDone(ConfigurationSync.this, mFoundation);
-            }
-        }*/
-        if (mListener != null) mListener.syncDone(instance, mFoundation);
+    private void complete_first_stage() {
+        cssLoader.setTargetGet(CSS_TARGET)
+                .execute();
     }
 
+    private class LoadCacheCssN extends LoadCacheCss {
 
-    private void syncCSS() {
-        FileDownloader f = new FileDownloader();
-        f.execute("http://hypebeast.com/bundles/hypebeasteditorial/app/main.css");
-    }
-
-    private class FileDownloader extends AsyncTask<String, Void, String> {
-        private Exception exception;
-        private String file_path = "";
-
-        private File createFile() throws Exception {
-            String root = Environment.getExternalStorageDirectory().toString();
-            File myDir = new File(root + "/hypetrak");
-            myDir.mkdirs();
-            Random generator = new Random();
-            int n = 10000;
-            n = generator.nextInt(n);
-            //  String fname = "Image-" + n + ".jpg";
-            file_path = "css_name";
-            File file = new File(myDir, file_path);
-            if (file.exists()) file.delete();
-            return file;
+        public LoadCacheCssN(UrlCache cache, SharedPreferences SP) {
+            super(cache, SP);
         }
 
         @Override
-        protected String doInBackground(String... params) {
-
-            try {
-                URL website = new URL(params[0]);
-                ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-                FileOutputStream fos = new FileOutputStream(createFile());
-                fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-                //      Reader inputStream = clientRequest.css_file().cacheResponse().body().charStream();
-                // String theString = IOUtils.toString(inputStream, "UTF-8");
-                //     String targetString = IOUtils.toString(inputStream);
-            /*  PreferenceManager.getDefaultSharedPreferences(app)
-                    .edit()
-                    .putString(PREFERENCE_CSS, targetString)
-                    .commit();*/
-                return file_path;
-            } catch (IOException e) {
-                Log.d("error", e.getMessage());
-            } catch (Exception e) {
-                Log.d("error", e.getMessage());
-            } finally {
-                return file_path;
-            }
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            complete_second_stage();
         }
 
-        protected void onPostExecute(String feed) {
+        @Override
+        protected void onError(String m) {
 
         }
 
+        @Override
+        protected String getSaveTag() {
+            return PREFERENCE_CSS;
+        }
+    }
+
+    private void prepareCacheConfiguration() {
+        String root = Environment.getExternalStorageDirectory().toString() + File.separator;
+        File myDir = new File(root + "hypetrak");
+        mUrlCache = new UrlCache(app, myDir);
+        mUrlCache.register(CSS_TARGET, "main.css", "text/css", "UTF-8", 5 * UrlCache.ONE_DAY);
+        cssLoader = new LoadCacheCssN(mUrlCache, PreferenceManager.getDefaultSharedPreferences(app));
+    }
+
+    private void complete_second_stage() {
+        if (mListener != null) mListener.syncDone(instance, mFoundation);
     }
 
     private void syncWorkerThread() {
@@ -193,7 +167,7 @@ public class ConfigurationSync {
                             .putString(PREFERENCE_FOUNDATION_REGISTRATION, timestamp.toString())
                             .commit();
 
-                    executeListeners();
+                    complete_first_stage();
                 }
 
                 @Override
@@ -206,7 +180,9 @@ public class ConfigurationSync {
         }
     }
 
+
     private void init() {
+        prepareCacheConfiguration();
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(app);
         String data = sharedPreferences.getString(PREFERENCE_FOUNDATION, "none");
         String time = sharedPreferences.getString(PREFERENCE_FOUNDATION_REGISTRATION, "none");
@@ -224,7 +200,7 @@ public class ConfigurationSync {
                     syncWorkerThread();
                 } else {
                     mFoundation = client.fromsavedConfiguration(data);
-                    executeListeners();
+                    complete_first_stage();
                 }
             }
         } else if (data.equalsIgnoreCase("none") || time.equalsIgnoreCase("none")) {

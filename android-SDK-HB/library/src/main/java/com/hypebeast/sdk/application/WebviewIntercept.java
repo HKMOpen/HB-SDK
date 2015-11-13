@@ -12,6 +12,8 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.hypebeast.sdk.Util.UrlCache;
+
 import java.io.IOException;
 import java.io.InputStream;
 

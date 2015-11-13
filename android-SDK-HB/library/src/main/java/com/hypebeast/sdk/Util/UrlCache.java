@@ -1,9 +1,15 @@
-package com.hypebeast.sdk.application;
+package com.hypebeast.sdk.Util;
 
+import android.app.Application;
 import android.content.Context;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.webkit.WebResourceResponse;
+
+import com.squareup.okhttp.Headers;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,6 +21,9 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
+
+import okio.BufferedSink;
+import okio.Okio;
 
 /**
  * Created by hesk on 3/6/15.
@@ -45,7 +54,7 @@ public class UrlCache {
 
 
     protected Map<String, CacheEntry> cacheEntries = new HashMap<String, CacheEntry>();
-    protected AppCompatActivity activity = null;
+    protected Context activity = null;
     protected File rootDir = null;
 
     public static String LOG_TAG = "cacheEntry";
@@ -55,34 +64,32 @@ public class UrlCache {
         this.rootDir = this.activity.getFilesDir();
     }
 
-    public UrlCache(AppCompatActivity activity, File rootDir) {
+    public UrlCache(Application activity, File rootDir) {
         this.activity = activity;
         this.rootDir = rootDir;
+        if (!rootDir.exists()) {
+            rootDir.mkdir();
+        }
     }
 
 
-    public void register(String url, String cacheFileName,
-                         String mimeType, String encoding,
-                         long maxAgeMillis) {
-
+    public void register(final String url,
+                         final String cacheFileName,
+                         final String mimeType,
+                         final String encoding,
+                         final long maxAgeMillis) {
         CacheEntry entry = new CacheEntry(url, cacheFileName, mimeType, encoding, maxAgeMillis);
-
         this.cacheEntries.put(url, entry);
     }
 
-
-    public WebResourceResponse load(String url) {
-        CacheEntry cacheEntry = this.cacheEntries.get(url);
-
+    public WebResourceResponse load(final String url) {
+        final CacheEntry cacheEntry = this.cacheEntries.get(url);
         if (cacheEntry == null) return null;
-
-        File cachedFile = new File(this.rootDir.getPath() + File.separator + cacheEntry.fileName);
-
+        final File cachedFile = new File(this.rootDir.getPath() + File.separator + cacheEntry.fileName);
         if (cachedFile.exists()) {
             long cacheEntryAge = System.currentTimeMillis() - cachedFile.lastModified();
             if (cacheEntryAge > cacheEntry.maxAgeMillis) {
                 cachedFile.delete();
-
                 //cached file deleted, call load() again.
                 Log.d(LOG_TAG, "Deleting from cache: " + url);
                 return load(url);
@@ -94,16 +101,22 @@ public class UrlCache {
                 return new WebResourceResponse(
                         cacheEntry.mimeType, cacheEntry.encoding, new FileInputStream(cachedFile));
             } catch (FileNotFoundException e) {
-                Log.d(LOG_TAG, "Error loading cached file: " + cachedFile.getPath() + " : "
-                        + e.getMessage(), e);
+                String m = "Error loading cached file: " +
+                        cachedFile.getPath() +
+                        " : " + e.getMessage();
+                Log.d(LOG_TAG, m, e);
+                //throw new Exception(m);
             }
 
         } else {
             try {
-                downloadAndStore(url, cacheEntry, cachedFile);
-
+                cachedFile.createNewFile();
+                // downloadAndStore(url, cacheEntry, cachedFile);
+                downladAndStoreOkHttp(url, cacheEntry, cachedFile);
                 //now the file exists in the cache, so we can just call this method again to read it.
                 return load(url);
+            } catch (IOException e) {
+                e.printStackTrace();
             } catch (Exception e) {
                 Log.d(LOG_TAG, "Error reading file over network: " + cachedFile.getPath(), e);
             }
@@ -112,26 +125,34 @@ public class UrlCache {
         return null;
     }
 
+    /**
+     * download the file form the internet and store it in the specific path
+     *
+     * @param url        the url
+     * @param cacheEntry the object entry
+     * @param cachedFile the cached file
+     * @throws IOException the message in exception
+     */
+    private void downladAndStoreOkHttp(String url, CacheEntry cacheEntry, File cachedFile) throws IOException {
+        OkHttpClient client = new OkHttpClient();
+        Request request =
+                new Request.Builder().url(url)
+                        // .addHeader("X-CSRFToken", csrftoken)
+                        .addHeader("Content-Type", "text/css")
+                        .build();
 
-    private void downloadAndStore(String url, CacheEntry cacheEntry, File cachedFile)
-            throws IOException {
+        Response response = client.newCall(request).execute();
+        if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
 
-        URL urlObj = new URL(url);
-        URLConnection urlConnection = urlObj.openConnection();
-        InputStream urlInput = urlConnection.getInputStream();
-
-        FileOutputStream fileOutputStream =
-                this.activity.openFileOutput(cacheEntry.fileName, Context.MODE_PRIVATE);
-
-        int data = urlInput.read();
-        while (data != -1) {
-            fileOutputStream.write(data);
-
-            data = urlInput.read();
+        Headers responseHeaders = response.headers();
+        for (int i = 0; i < responseHeaders.size(); i++) {
+            System.out.println(responseHeaders.name(i) + ": " + responseHeaders.value(i));
         }
 
-        urlInput.close();
-        fileOutputStream.close();
-        Log.d(LOG_TAG, "Cache file: " + cacheEntry.fileName + " stored. ");
+        BufferedSink sink = Okio.buffer(Okio.sink(cachedFile));
+        sink.writeAll(response.body().source());
+        sink.close();
+
     }
+
 }
