@@ -150,4 +150,30 @@ public interface Products {
                  final Callback<ReponseNormal> result) throws ApiException;
 
 
+    @GET("/")
+    void general(
+            final @Query("filter") String jsonString,
+            final Callback<ReponseNormal> result
+    ) throws ApiException;
+
+    @GET("/")
+    void general(
+            final @Query("filter") String jsonString,
+            final @Query("page") int page_num,
+            final @Query("limit") int limit,
+            final Callback<ReponseNormal> result
+    ) throws ApiException;
+
+    @GET("/")
+    void general(
+            final @Query("page") int page_num,
+            final @Query("limit") int limit,
+            final Callback<ReponseNormal> result
+    ) throws ApiException;
+
+    @GET("/")
+    void general(
+            final Callback<ReponseNormal> result
+    ) throws ApiException;
+
 }

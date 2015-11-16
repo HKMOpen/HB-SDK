@@ -120,7 +120,12 @@ public class HBStoreApiClient extends Client {
                 .create();
     }
 
-    private RestAdapter fullEndpoint(final String endpoint) {
+    public Products generalProducts(final String endpoint) {
+        final RestAdapter adp = byURL(endpoint);
+        return adp.create(Products.class);
+    }
+
+    private RestAdapter byURL(final String endpoint) {
         return new RestAdapter.Builder()
                 .setEndpoint(endpoint)
                 .setLogLevel(RestAdapter.LogLevel.FULL)
@@ -169,7 +174,6 @@ public class HBStoreApiClient extends Client {
     private CookieHanger getCookieClient() {
         return CookieHanger.base(BASE_URL_STORE);
     }
-
 
 
     @Override
