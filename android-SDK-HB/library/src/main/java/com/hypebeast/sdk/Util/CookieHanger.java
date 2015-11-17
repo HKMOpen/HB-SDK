@@ -42,8 +42,6 @@ public class CookieHanger {
     }
 
     public String getValue(String key_name) {
-        // Cookieの保存が予想されるURLの場合
-        // WebViewのCookieを取得
         _raw_cookie = instance.getCookie(this.domain);
         //System.out.println("cookie - " + cookie);
         final String[] _raw_cookie_array = _raw_cookie.split(";");
@@ -52,14 +50,6 @@ public class CookieHanger {
             String[] cookieSet = keyValue.split("=");
             final String cookie_key = cookieSet[0];
             final String cookie_val = cookieSet[1];
-            // Cookieを作成
-            //  BasicClientCookie bCookie = new BasicClientCookie(cookie_key, cookie_val);
-            ///   bCookie.setDomain("lab.hisasann.com");
-            //    bCookie.setPath("/");
-            // CookieStoreを取得
-            //     CookieStore store = httpClient.getCookieStore();
-            // Cookieを追加
-            //   store.addCookie(bCookie);
             if (cookie_key.trim().equalsIgnoreCase(key_name)) {
                 return cookie_val.trim();
             }

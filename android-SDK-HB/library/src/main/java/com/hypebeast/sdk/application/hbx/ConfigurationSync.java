@@ -56,6 +56,8 @@ public class ConfigurationSync {
         return instance;
     }
 
+    //do not use this
+    @Deprecated
     public static ConfigurationSync getInstance() throws Exception {
         if (instance == null) {
             throw new Exception("please init a new instance. or go to the slash screen again");
@@ -63,10 +65,15 @@ public class ConfigurationSync {
         return instance;
     }
 
+    /**
+     * use this as the proper entry
+     * @param app the context from application
+     * @param mListener the callbacks
+     */
     public ConfigurationSync(Application app, sync mListener) {
         this.app = app;
         this.realm = Realm.getInstance(app);
-        client = HBStoreApiClient.getInstance();
+        client = HBStoreApiClient.getInstance(app);
         //client.setLanguageBase(HBEditorialClient.BASE_EN);
         mOverheadRequest = client.createOverHead();
         request_login = client.createAuthentication();
