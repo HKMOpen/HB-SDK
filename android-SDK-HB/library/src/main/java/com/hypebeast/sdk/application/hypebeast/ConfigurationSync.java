@@ -2,31 +2,23 @@ package com.hypebeast.sdk.application.hypebeast;
 
 import android.app.Application;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.webkit.WebResourceResponse;
 
 import com.hypebeast.sdk.Constants;
+import com.hypebeast.sdk.Util.LoadCacheCss;
 import com.hypebeast.sdk.api.exception.ApiException;
 import com.hypebeast.sdk.api.model.hbeditorial.Foundation;
 import com.hypebeast.sdk.api.model.hbeditorial.configbank;
 import com.hypebeast.sdk.api.resources.hypebeast.feedhost;
 import com.hypebeast.sdk.Util.UrlCache;
-import com.hypebeast.sdk.clients.Client;
 import com.hypebeast.sdk.clients.HBEditorialClient;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Random;
 
 import io.realm.Realm;
 import retrofit.Callback;
@@ -40,6 +32,8 @@ public class ConfigurationSync {
     public static ConfigurationSync instance;
     private final Application app;
     private Realm realm;
+    public static final String folder_name_local = "hb.editorials";
+    public static final String local_css_file_name = "hb_control_css.css";
     public static final String PREFERENCE_FOUNDATION = "foundationfile";
     public static final String PREFERENCE_CSS = "main_css_file";
     public static final String PREFERENCE_FOUNDATION_REGISTRATION = "regtime";
@@ -75,8 +69,7 @@ public class ConfigurationSync {
     public ConfigurationSync(Application app, sync mListener) {
         this.app = app;
         this.realm = Realm.getInstance(app);
-        client = new HBEditorialClient();
-        //client.setLanguageBase(HBEditorialClient.BASE_EN);
+        client = HBEditorialClient.newInstance(app);
         clientRequest = client.createFeedInterface();
         addInterface(mListener);
     }
@@ -136,9 +129,9 @@ public class ConfigurationSync {
 
     private void prepareCacheConfiguration() {
         String root = Environment.getExternalStorageDirectory().toString() + File.separator;
-        File myDir = new File(root + "hypetrak");
+        File myDir = new File(root + folder_name_local);
         mUrlCache = new UrlCache(app, myDir);
-        mUrlCache.register(CSS_TARGET, "main.css", "text/css", "UTF-8", 5 * UrlCache.ONE_DAY);
+        mUrlCache.register(CSS_TARGET, local_css_file_name, "text/css", "UTF-8", 5 * UrlCache.ONE_DAY);
         cssLoader = new LoadCacheCssN(mUrlCache, PreferenceManager.getDefaultSharedPreferences(app));
     }
 

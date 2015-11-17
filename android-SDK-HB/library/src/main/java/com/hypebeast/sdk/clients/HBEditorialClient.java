@@ -1,16 +1,27 @@
 package com.hypebeast.sdk.clients;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Build;
+import android.os.Environment;
+import android.preference.PreferenceManager;
 
 import com.google.gson.GsonBuilder;
 import com.hypebeast.sdk.Constants;
+import com.hypebeast.sdk.Util.Connectivity;
+import com.hypebeast.sdk.Util.UrlCache;
 import com.hypebeast.sdk.api.gson.GsonFactory;
 import com.hypebeast.sdk.api.gson.MissingCharacterConversion;
 import com.hypebeast.sdk.api.gson.RealmExclusion;
 import com.hypebeast.sdk.api.gson.WordpressConversion;
 import com.hypebeast.sdk.api.model.hbeditorial.Foundation;
 import com.hypebeast.sdk.api.resources.hypebeast.feedhost;
+import com.hypebeast.sdk.application.hypebeast.ConfigurationSync;
 
+import java.io.File;
+import java.io.IOException;
+
+import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import retrofit.converter.GsonConverter;
 
@@ -37,11 +48,12 @@ public class HBEditorialClient extends Client {
 
     private static HBEditorialClient static_instance;
 
-
+    @Deprecated
     public static HBEditorialClient newInstance() {
         return new HBEditorialClient();
     }
 
+    @Deprecated
     public static HBEditorialClient getInstance() {
         if (static_instance == null) {
             static_instance = new HBEditorialClient();
@@ -51,9 +63,48 @@ public class HBEditorialClient extends Client {
         }
     }
 
+    public static HBEditorialClient getInstance(Context c) {
+        if (static_instance == null) {
+            static_instance = new HBEditorialClient(c);
+            return static_instance;
+        } else {
+            return static_instance;
+        }
+    }
 
+    public static HBEditorialClient newInstance(Context c) {
+        return new HBEditorialClient(c);
+    }
+
+    @Deprecated
     public HBEditorialClient() {
         super();
+    }
+
+    public HBEditorialClient(Context c) {
+        super(c);
+    }
+
+    @Override
+    protected RequestInterceptor getIn() {
+        return new RequestInterceptor() {
+            @Override
+            public void intercept(RequestFacade request) {
+                request.addHeader("User-Agent", get_USER_AGENT());
+                request.addHeader("Accept", "application/json");
+                request.addHeader("X-Api-Version", "2.0");
+                // request.addHeader("Cookie", getCookieClient().getRaw());
+                try {
+                    if (Connectivity.isConnected(context)) {
+                        request.addHeader("Cache-Control", "public, max-age=" + timeByMins(1));
+                    } else {
+                        request.addHeader("Cache-Control", "public, only-if-cached, max-stale=" + timeByWeeks(1));
+                    }
+                } catch (Exception e) {
+
+                }
+            }
+        };
     }
 
     @Override
@@ -73,7 +124,7 @@ public class HBEditorialClient extends Client {
                 .registerTypeAdapter(String.class, new MissingCharacterConversion())
                 .setExclusionStrategies(new RealmExclusion())
 
-                //.registerTypeAdapter(String.class, new WordpressConversion())
+                        //.registerTypeAdapter(String.class, new WordpressConversion())
                 .create();
     }
 
@@ -84,6 +135,7 @@ public class HBEditorialClient extends Client {
     public String fromJsonToString(Foundation mfound) {
         return gsonsetup.toJson(mfound);
     }
+
 
     @Override
     protected void registerAdapter() {
@@ -97,6 +149,8 @@ public class HBEditorialClient extends Client {
                 .setRequestInterceptor(getIn())
                 .setConverter(new GsonConverter(gsonsetup))
                 .build();
+
+        // buildCompletCacheRestAdapter(endpoint, context, RestAdapter.LogLevel.HEADERS);
     }
 
 
@@ -117,5 +171,34 @@ public class HBEditorialClient extends Client {
         return mAdapter.create(feedhost.class);
     }
 
+    /**
+     * please request with 'full_path_list' as the universal request will work eventually
+     *
+     * @param full_path the full head part
+     * @return the feedhost object
+     */
+    public feedhost createAPIUniversal(final String full_path) {
+        RestAdapter mAdapter = new RestAdapter.Builder()
+                .setEndpoint(full_path)
+                .setLogLevel(RestAdapter.LogLevel.HEADERS)
+                .setErrorHandler(handlerError)
+                .setRequestInterceptor(getIn())
+                .setConverter(new GsonConverter(gsonsetup))
+                .build();
+        // buildCompletCacheRestAdapter(endpoint, context, RestAdapter.LogLevel.HEADERS);
+        return mAdapter.create(feedhost.class);
+    }
+
+
+    public void getCSSLocal(UrlCache.readDone done_load) throws IOException {
+        String root = Environment.getExternalStorageDirectory().toString() + File.separator;
+        UrlCache.loadFromLocalFileText(ConfigurationSync.folder_name_local, ConfigurationSync.local_css_file_name, done_load);
+    }
+
+    public String getCSSFast() {
+        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        String data = sharedPreferences.getString(ConfigurationSync.PREFERENCE_CSS, "");
+        return data;
+    }
 
 }

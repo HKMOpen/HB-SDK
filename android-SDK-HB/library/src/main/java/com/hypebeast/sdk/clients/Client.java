@@ -92,7 +92,6 @@ public abstract class Client {
         try {
             File httpCacheDirectory = new File(context.getCacheDir(), "responses");
             mCache = new Cache(httpCacheDirectory, 10 * 1024 * 1024);
-
             // Create OkHttpClient
             OkHttpClient okHttpClient = new OkHttpClient();
             okHttpClient.setCache(mCache);
@@ -110,15 +109,12 @@ public abstract class Client {
                             .header("Authorization", "auth-token")
                             .method(original.method(), original.body())
                             .build();
-
                     Response response = chain.proceed(request);
-
                     // Customize or return the response
                     return response;
                 }
             });
             */
-
             mAdapter = restbuilder
                     .setClient(new OkClient(okHttpClient))
                     .build();
