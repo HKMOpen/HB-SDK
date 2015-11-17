@@ -1,10 +1,8 @@
-package com.hypebeast.sdk.application.hypebeast;
+package com.hypebeast.sdk.Util;
 
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.webkit.WebResourceResponse;
-
-import com.hypebeast.sdk.Util.UrlCache;
 
 import org.apache.commons.io.IOUtils;
 

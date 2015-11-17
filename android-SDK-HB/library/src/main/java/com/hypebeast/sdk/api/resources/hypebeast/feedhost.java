@@ -61,8 +61,15 @@ public interface feedhost {
             final Callback<Foundation> cb
     ) throws ApiException;
 
+    @GET("/page/{page_no}")
+    void full_path_list(
+            final @Path("page_no") int pagepage_number_no,
+            final Callback<ResponsePostW> cb
+    ) throws ApiException;
 
-    //http://hypebeast.com/bundles/hypebeasteditorial/app/main.css
-    @GET("/bundles/hypebeasteditorial/app/main.css")
-    Response css_file() throws ApiException;
+    @GET("/")
+    void full_path_list(
+            final Callback<ResponsePostW> cb
+    ) throws ApiException;
+
 }
