@@ -29,20 +29,16 @@ android:
     - tools
     - build-tools-$ANDROID_BUILD_TOOLS_VERSION
     - android-$ANDROID_API_LEVEL
-    
-    
+    - extra
+
     # Support library
     - extra-android-support
-    
-    # For Google APIs
-    - addon-google_apis-google-$ANDROID_API_LEVEL
-    - addon-google_apis-google-$EMULATOR_API_LEVEL
     
     # Additional components
     - extra-google-google_play_services
     - extra-google-m2repository
     - extra-android-m2repository
-    # - addon-google_apis-google-19
+    - addon-google_apis-google-$ANDROID_API_LEVEL
     # Specify at least one system image,
     # if you need to run emulator(s) during your tests
     - sys-img-armeabi-v7a-android-$ANDROID_API_LEVEL
@@ -53,6 +49,7 @@ android:
     
   licenses:
     - 'android-sdk-license-.+'
+    - 'google-gdk-license-.+'
     
 before_script:
   # Create and start emulator
