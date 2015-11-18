@@ -13,6 +13,7 @@ import com.hypebeast.sdk.api.resources.hbstore.Authentication;
 import com.hypebeast.sdk.api.resources.hbstore.Brand;
 import com.hypebeast.sdk.api.resources.hbstore.Overhead;
 import com.hypebeast.sdk.api.resources.hbstore.Products;
+import com.hypebeast.sdk.application.ApplicationBase;
 import com.hypebeast.sdk.clients.HBStoreApiClient;
 
 import java.sql.Timestamp;
@@ -27,9 +28,8 @@ import retrofit.client.Response;
 /**
  * Created by hesk on 1/9/15.
  */
-public class ConfigurationSync {
+public class ConfigurationSync extends ApplicationBase {
     public static ConfigurationSync instance;
-    private final Application app;
     private Realm realm;
     public static final String PREFERENCE_FOUNDATION = "foundationfile";
     public static final String ACCOUNT_USER = "hbxuser";
@@ -56,8 +56,6 @@ public class ConfigurationSync {
         return instance;
     }
 
-    //do not use this
-    @Deprecated
     public static ConfigurationSync getInstance() throws Exception {
         if (instance == null) {
             throw new Exception("please init a new instance. or go to the slash screen again");
@@ -65,13 +63,8 @@ public class ConfigurationSync {
         return instance;
     }
 
-    /**
-     * use this as the proper entry
-     * @param app the context from application
-     * @param mListener the callbacks
-     */
     public ConfigurationSync(Application app, sync mListener) {
-        this.app = app;
+        super(app);
         this.realm = Realm.getInstance(app);
         client = HBStoreApiClient.getInstance(app);
         //client.setLanguageBase(HBEditorialClient.BASE_EN);
@@ -107,8 +100,8 @@ public class ConfigurationSync {
     private void syncCheckLogined() {
         try {
 
-            String user = load(ACCOUNT_USER);
-            String pass = load(ACCOUNT_PASS);
+            String user = loadRef(ACCOUNT_USER);
+            String pass = loadRef(ACCOUNT_PASS);
             if (user.equalsIgnoreCase("none") || pass.equalsIgnoreCase("none")) {
                 executeListeners();
                 return;
@@ -160,22 +153,11 @@ public class ConfigurationSync {
         }
     }
 
-    private void saveInfo(final String tag, final String data) {
-        PreferenceManager.getDefaultSharedPreferences(app)
-                .edit()
-                .putString(tag, data)
-                .commit();
-    }
 
-    private String load(final String tag) {
-        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(app);
-        String data = sharedPreferences.getString(tag, "none");
-        return data;
-    }
 
     private void init() {
-        String data = load(PREFERENCE_FOUNDATION);
-        String time = load(PREFERENCE_FOUNDATION_REGISTRATION);
+        String data = loadRef(PREFERENCE_FOUNDATION);
+        String time = loadRef(PREFERENCE_FOUNDATION_REGISTRATION);
         if (!data.equalsIgnoreCase("none") && !time.equalsIgnoreCase("none")) {
             Timestamp past = Timestamp.valueOf(time);
             Date date = new Date();

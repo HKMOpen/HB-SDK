@@ -123,7 +123,12 @@ public class HTEditorialClient extends Client {
         return -1;
     }
 
-
+    /**
+     * this is the splash screen data sync task for prestarting the app
+     *
+     * @param context  the application context
+     * @param callback the call back event
+     */
     public void retentData(final Context context, final Runnable callback) {
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         final String data = sharedPreferences.getString(REFERENCE_MOBILE_CONFIG, "none");

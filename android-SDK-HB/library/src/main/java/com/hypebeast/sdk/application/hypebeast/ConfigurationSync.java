@@ -13,6 +13,7 @@ import com.hypebeast.sdk.api.model.hbeditorial.Foundation;
 import com.hypebeast.sdk.api.model.hbeditorial.configbank;
 import com.hypebeast.sdk.api.resources.hypebeast.feedhost;
 import com.hypebeast.sdk.Util.UrlCache;
+import com.hypebeast.sdk.application.ApplicationBase;
 import com.hypebeast.sdk.clients.HBEditorialClient;
 
 import java.io.File;
@@ -28,16 +29,15 @@ import retrofit.client.Response;
 /**
  * Created by hesk on 1/9/15.
  */
-public class ConfigurationSync {
+public class ConfigurationSync extends ApplicationBase {
     public static ConfigurationSync instance;
-    private final Application app;
     private Realm realm;
     public static final String folder_name_local = "hb.editorials";
-    public static final String local_css_file_name = "hb_control_css.css";
+    public static final String local_css_file_name = "hb_article_content.css";
     public static final String PREFERENCE_FOUNDATION = "foundationfile";
     public static final String PREFERENCE_CSS = "main_css_file";
     public static final String PREFERENCE_FOUNDATION_REGISTRATION = "regtime";
-    private static final String CSS_TARGET = "http://hypebeast.com/bundles/hypebeasteditorial/app/main.css";
+    private static final String ACCESS_FILE_URL = "http://hypebeast.com/bundles/hypebeasteditorial/app/main.css";
     private feedhost clientRequest;
     private Foundation mFoundation;
     private HBEditorialClient client;
@@ -67,7 +67,7 @@ public class ConfigurationSync {
     }
 
     public ConfigurationSync(Application app, sync mListener) {
-        this.app = app;
+        super(app);
         this.realm = Realm.getInstance(app);
         client = HBEditorialClient.newInstance(app);
         clientRequest = client.createFeedInterface();
@@ -100,7 +100,7 @@ public class ConfigurationSync {
     }
 
     private void complete_first_stage() {
-        cssLoader.setTargetGet(CSS_TARGET)
+        cssLoader.setTargetGet(ACCESS_FILE_URL)
                 .execute();
     }
 
@@ -128,10 +128,10 @@ public class ConfigurationSync {
     }
 
     private void prepareCacheConfiguration() {
-        String root = Environment.getExternalStorageDirectory().toString() + File.separator;
-        File myDir = new File(root + folder_name_local);
+        final String root = Environment.getExternalStorageDirectory().toString() + File.separator;
+        final File myDir = new File(root + folder_name_local);
         mUrlCache = new UrlCache(app, myDir);
-        mUrlCache.register(CSS_TARGET, local_css_file_name, "text/css", "UTF-8", 5 * UrlCache.ONE_DAY);
+        mUrlCache.register(ACCESS_FILE_URL, local_css_file_name, "text/css", "UTF-8", 5 * UrlCache.ONE_DAY);
         cssLoader = new LoadCacheCssN(mUrlCache, PreferenceManager.getDefaultSharedPreferences(app));
     }
 
@@ -145,21 +145,10 @@ public class ConfigurationSync {
                 @Override
                 public void success(Foundation foundation, Response response) {
                     mFoundation = foundation;
-
-
-                    PreferenceManager.getDefaultSharedPreferences(app)
-                            .edit()
-                            .putString(PREFERENCE_FOUNDATION, client.fromJsonToString(foundation))
-                            .commit();
-
+                    saveInfo(PREFERENCE_FOUNDATION, client.fromJsonToString(foundation));
                     Date date = new Date();
                     Timestamp timestamp = new Timestamp(date.getTime());
-
-                    PreferenceManager.getDefaultSharedPreferences(app)
-                            .edit()
-                            .putString(PREFERENCE_FOUNDATION_REGISTRATION, timestamp.toString())
-                            .commit();
-
+                    saveInfo(PREFERENCE_FOUNDATION_REGISTRATION, timestamp.toString());
                     complete_first_stage();
                 }
 
@@ -176,9 +165,8 @@ public class ConfigurationSync {
 
     private void init() {
         prepareCacheConfiguration();
-        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(app);
-        String data = sharedPreferences.getString(PREFERENCE_FOUNDATION, "none");
-        String time = sharedPreferences.getString(PREFERENCE_FOUNDATION_REGISTRATION, "none");
+        String data = loadRef(PREFERENCE_FOUNDATION);
+        String time = loadRef(PREFERENCE_FOUNDATION_REGISTRATION);
         if (!data.equalsIgnoreCase("none") && !time.equalsIgnoreCase("none")) {
             Timestamp past = Timestamp.valueOf(time);
             Date date = new Date();
