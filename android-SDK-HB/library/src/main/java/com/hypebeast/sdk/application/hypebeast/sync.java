@@ -7,4 +7,6 @@ import com.hypebeast.sdk.api.model.hbeditorial.Foundation;
  */
 public interface sync {
     void syncDone(ConfigurationSync me, Foundation data);
+
+    void initFailure(String message);
 }

@@ -16,6 +16,11 @@ public abstract class LoadCacheCss extends AsyncTask<Void, Void, String> {
     private UrlCache cache;
     private String target;
     private SharedPreferences ssp;
+    private String error_message;
+
+    protected abstract void onError(String m);
+
+    protected abstract String getSaveTag();
 
     public LoadCacheCss(UrlCache cache, SharedPreferences SP) {
         this.cache = cache;
@@ -36,22 +41,17 @@ public abstract class LoadCacheCss extends AsyncTask<Void, Void, String> {
         }
     }
 
-    protected abstract String getSaveTag();
-
-    private String error_message;
-
-    protected abstract void onError(String m);
-
     @Override
     protected String doInBackground(Void... params) {
         StringWriter writer = new StringWriter();
         try {
             WebResourceResponse loadedcontent = cache.load(target);
+            if(loadedcontent==null)throw new IOException(cache.getErrorMessage());
             IOUtils.copy(loadedcontent.getData(), writer, "UTF-8");
         } catch (IOException e) {
             error_message = e.getMessage();
         } catch (Exception e) {
-            error_message = e.getMessage();
+            error_message = "failure to load data from the URL: " + e.getMessage();
         }
         return writer.toString().trim();
     }

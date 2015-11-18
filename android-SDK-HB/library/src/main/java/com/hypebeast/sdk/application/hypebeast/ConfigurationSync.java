@@ -45,6 +45,8 @@ public class ConfigurationSync extends ApplicationBase {
     private sync mListener;
     private UrlCache mUrlCache;
     private LoadCacheCss cssLoader;
+    private boolean isFailure;
+    private String failure_message;
 
     public static ConfigurationSync with(Application app, sync mListener) {
         if (instance == null) {
@@ -68,6 +70,8 @@ public class ConfigurationSync extends ApplicationBase {
 
     public ConfigurationSync(Application app, sync mListener) {
         super(app);
+
+        isFailure = false;
         this.realm = Realm.getInstance(app);
         client = HBEditorialClient.newInstance(app);
         clientRequest = client.createFeedInterface();
@@ -91,13 +95,9 @@ public class ConfigurationSync extends ApplicationBase {
     }
 
     private void addInterface(sync listenerSync) {
-        // mListeners.add(listenerSync);
         mListener = listenerSync;
     }
 
-    public void clearListeners() {
-        //mListeners.clear();
-    }
 
     private void complete_first_stage() {
         cssLoader.setTargetGet(ACCESS_FILE_URL)
@@ -118,7 +118,8 @@ public class ConfigurationSync extends ApplicationBase {
 
         @Override
         protected void onError(String m) {
-
+            failure_message = m;
+            isFailure = true;
         }
 
         @Override
@@ -136,7 +137,13 @@ public class ConfigurationSync extends ApplicationBase {
     }
 
     private void complete_second_stage() {
-        if (mListener != null) mListener.syncDone(instance, mFoundation);
+        if (mListener != null) {
+            if (!isFailure) {
+                mListener.syncDone(instance, mFoundation);
+            } else {
+                mListener.initFailure(failure_message);
+            }
+        }
     }
 
     private void syncWorkerThread() {
@@ -154,11 +161,13 @@ public class ConfigurationSync extends ApplicationBase {
 
                 @Override
                 public void failure(RetrofitError error) {
-                    Log.d("faa", error.getMessage());
+                    failure_message = error.getMessage();
+                    isFailure = true;
                 }
             });
         } catch (ApiException e) {
-            e.printStackTrace();
+            failure_message = e.getMessage();
+            isFailure = true;
         }
     }
 

@@ -73,9 +73,6 @@ public class UrlCache {
     public UrlCache(Application activity, File rootDir) {
         this.activity = activity;
         this.rootDir = rootDir;
-        if (!rootDir.exists()) {
-            rootDir.mkdir();
-        }
     }
 
 
@@ -86,6 +83,10 @@ public class UrlCache {
                          final long maxAgeMillis) {
         CacheEntry entry = new CacheEntry(url, cacheFileName, mimeType, encoding, maxAgeMillis);
         this.cacheEntries.put(url, entry);
+    }
+
+    public String getErrorMessage() {
+        return error_message_thrown;
     }
 
     public WebResourceResponse load(final String url) {
@@ -112,24 +113,35 @@ public class UrlCache {
                         " : " + e.getMessage();
                 Log.d(LOG_TAG, m, e);
                 //throw new Exception(m);
+                error_message_thrown = m;
             }
 
         } else {
             try {
+
+                if (!rootDir.exists()) {
+                    boolean result = rootDir.mkdir();
+                    if (!result) {
+                        error_message_thrown = "Cannot create the folder at: " + rootDir.getCanonicalPath();
+                        return null;
+                    }
+                }
                 cachedFile.createNewFile();
                 // downloadAndStore(url, cacheEntry, cachedFile);
                 downladAndStoreOkHttp(url, cacheEntry, cachedFile);
                 //now the file exists in the cache, so we can just call this method again to read it.
                 return load(url);
             } catch (IOException e) {
-                e.printStackTrace();
+                error_message_thrown = e.getLocalizedMessage();
             } catch (Exception e) {
-                Log.d(LOG_TAG, "Error reading file over network: " + cachedFile.getPath(), e);
+                error_message_thrown = "Error reading file over network: " + cachedFile.getPath() + e.getMessage();
             }
         }
 
         return null;
     }
+
+    private String error_message_thrown;
 
     /**
      * download the file form the internet and store it in the specific path
@@ -199,7 +211,7 @@ public class UrlCache {
                         sb.append(temp_line);
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    // error_message_thrown = e.getMessage();
                 }
                 return null;
             }
