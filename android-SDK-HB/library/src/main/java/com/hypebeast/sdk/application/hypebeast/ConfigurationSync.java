@@ -38,6 +38,7 @@ public class ConfigurationSync extends ApplicationBase {
     public static final String PREFERENCE_CSS = "main_css_file";
     public static final String PREFERENCE_FOUNDATION_REGISTRATION = "regtime";
     private static final String ACCESS_FILE_URL = "http://hypebeast.com/bundles/hypebeasteditorial/app/main.css";
+
     private feedhost clientRequest;
     private Foundation mFoundation;
     private HBEditorialClient client;
@@ -59,6 +60,13 @@ public class ConfigurationSync extends ApplicationBase {
         }
 
         return instance;
+    }
+
+    @Override
+    protected void removeAllData() {
+        saveInfo(PREFERENCE_FOUNDATION, "");
+        saveInfo(PREFERENCE_CSS, "");
+        saveInfo(PREFERENCE_FOUNDATION_REGISTRATION, "");
     }
 
     public static ConfigurationSync getInstance() throws Exception {
@@ -100,9 +108,9 @@ public class ConfigurationSync extends ApplicationBase {
 
 
     private void complete_first_stage() {
-        cssLoader.setTargetGet(ACCESS_FILE_URL)
-                .execute();
+        cssLoader.setTargetGet(ACCESS_FILE_URL).execute();
     }
+
 
     private class LoadCacheCssN extends LoadCacheCss {
 
@@ -139,12 +147,16 @@ public class ConfigurationSync extends ApplicationBase {
     private void complete_second_stage() {
         if (mListener != null) {
             if (!isFailure) {
-                mListener.syncDone(instance, mFoundation);
+                if (mListener instanceof syncDebug) {
+                    ((syncDebug) mListener).syncDone(instance, mFoundation, getVersionMessage());
+                } else
+                    mListener.syncDone(instance, mFoundation);
             } else {
                 mListener.initFailure(failure_message);
             }
         }
     }
+
 
     private void syncWorkerThread() {
         try {
@@ -176,7 +188,7 @@ public class ConfigurationSync extends ApplicationBase {
         prepareCacheConfiguration();
         String data = loadRef(PREFERENCE_FOUNDATION);
         String time = loadRef(PREFERENCE_FOUNDATION_REGISTRATION);
-        if (!data.equalsIgnoreCase("none") && !time.equalsIgnoreCase("none")) {
+        if (!data.equalsIgnoreCase(EMPTY_FIELD) && !time.equalsIgnoreCase(EMPTY_FIELD)) {
             Timestamp past = Timestamp.valueOf(time);
             Date date = new Date();
             //   Calendar cal1 = Calendar.getInstance();
@@ -193,7 +205,7 @@ public class ConfigurationSync extends ApplicationBase {
                     complete_first_stage();
                 }
             }
-        } else if (data.equalsIgnoreCase("none") || time.equalsIgnoreCase("none")) {
+        } else if (data.equalsIgnoreCase(EMPTY_FIELD) || time.equalsIgnoreCase(EMPTY_FIELD)) {
             syncWorkerThread();
         }
     }
@@ -214,5 +226,9 @@ public class ConfigurationSync extends ApplicationBase {
             return mFoundation.chinese_traditional;
         } else
             return mFoundation.english;
+    }
+
+    public String getVersionMessage() {
+        return debug_version;
     }
 }

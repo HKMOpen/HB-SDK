@@ -73,6 +73,13 @@ public class ConfigurationSync extends ApplicationBase {
         addInterface(mListener);
     }
 
+    @Override
+    protected void removeAllData() {
+        saveInfo(PREFERENCE_FOUNDATION, "");
+        saveInfo(PREFERENCE_FOUNDATION_REGISTRATION, "");
+        saveInfo(ACCOUNT_USER, "");
+        saveInfo(ACCOUNT_PASS, "");
+    }
 
     public HBStoreApiClient getInstanceHBClient() {
         return client;
@@ -154,7 +161,6 @@ public class ConfigurationSync extends ApplicationBase {
     }
 
 
-
     private void init() {
         String data = loadRef(PREFERENCE_FOUNDATION);
         String time = loadRef(PREFERENCE_FOUNDATION_REGISTRATION);
@@ -183,7 +189,6 @@ public class ConfigurationSync extends ApplicationBase {
     public ResponseMobileOverhead getFoundation() {
         return mFoundation;
     }
-
 
  /*   public configbank getByLanguage(String lang) {
         if (lang.equals("en")) {

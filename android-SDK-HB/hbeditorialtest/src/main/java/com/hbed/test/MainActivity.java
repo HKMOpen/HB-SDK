@@ -17,6 +17,7 @@ import com.hypebeast.sdk.api.model.hbeditorial.Foundation;
 import com.hypebeast.sdk.application.Splash;
 import com.hypebeast.sdk.application.hypebeast.ConfigurationSync;
 import com.hypebeast.sdk.application.hypebeast.sync;
+import com.hypebeast.sdk.application.hypebeast.syncDebug;
 import com.hypebeast.sdk.clients.HBEditorialClient;
 
 public class MainActivity extends Splash {
@@ -50,16 +51,26 @@ public class MainActivity extends Splash {
 
     @Override
     protected void synchronizeData() {
-        ConfigurationSync.with(getApplication(), new sync() {
+        ConfigurationSync.with(getApplication(), new syncDebug() {
             @Override
-            public void syncDone(ConfigurationSync conf, Foundation data) {
+            public void syncDone(ConfigurationSync conf, Foundation data, String msg) {
                 final String language_prefrence = getLanguagePref(getApplication());
                 // final configbank mConfig = conf.getByLanguage(language_prefrence);
                 conf.switchToLanguage(language_prefrence);
                 HBEditorialClient client = conf.getInstanceHBClient();
                 //  Intent d = new Intent(Slash.this, MainScreen.class);
                 //  startActivity(d);
-                finish();
+                //finish();
+
+                StringBuilder h = new StringBuilder();
+                h.append("Successfully synced data. Now it will be closed ");
+                h.append(msg);
+                ErrorMessage.alert(h.toString(), getFragmentManager(), new Runnable() {
+                    @Override
+                    public void run() {
+                        finish();
+                    }
+                });
             }
 
             @Override

@@ -19,7 +19,7 @@ android {
         applicationId "com.hbed.test"
         minSdkVersion 17
         targetSdkVersion 23
-        versionCode 1
+        versionCode 6
         versionName "1.1br"
     }
     buildTypes {

@@ -33,6 +33,8 @@ import okio.Okio;
 
 /**
  * Created by hesk on 3/6/15.
+ * Local storage file supported
+ * API 23 up need permission check.
  */
 public class UrlCache {
     public static final long ONE_SECOND = 1000L;
@@ -105,12 +107,26 @@ public class UrlCache {
             //cached file exists and is not too old. Return file.
             Log.d(LOG_TAG, "Loading from cache: " + url);
             try {
-                return new WebResourceResponse(
-                        cacheEntry.mimeType, cacheEntry.encoding, new FileInputStream(cachedFile));
+                WebResourceResponse file = new WebResourceResponse(cacheEntry.mimeType, cacheEntry.encoding, new FileInputStream(cachedFile));
+                if (file.getData().available() == 0) {
+                    cachedFile.delete();
+                    cachedFile.createNewFile();
+                    downladAndStoreOkHttp(url, cacheEntry, cachedFile);
+                }
+
+                /**
+                 * end of the story
+                 */
+                return file;
             } catch (FileNotFoundException e) {
                 String m = "Error loading cached file: " +
                         cachedFile.getPath() +
                         " : " + e.getMessage();
+                Log.d(LOG_TAG, m, e);
+                //throw new Exception(m);
+                error_message_thrown = m;
+            } catch (IOException e) {
+                String m = "Error loading cached file: " + cachedFile.getPath() + " : " + e.getMessage();
                 Log.d(LOG_TAG, m, e);
                 //throw new Exception(m);
                 error_message_thrown = m;
@@ -191,9 +207,7 @@ public class UrlCache {
     public static void loadFromLocalFileText(File cachedFile, final readDone read_done) throws IOException {
         String UTF8 = "utf8";
         int BUFFER_SIZE = 8192;
-
         final BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(cachedFile), UTF8), BUFFER_SIZE);
-
 
         new AsyncTask<Void, Void, Void>() {
             protected String temp_line;
@@ -216,7 +230,6 @@ public class UrlCache {
                 return null;
             }
 
-
             @Override
             protected void onPostExecute(Void aVoid) {
                 if (read_done != null) {
@@ -224,7 +237,5 @@ public class UrlCache {
                 }
             }
         }.execute();
-
-
     }
 }

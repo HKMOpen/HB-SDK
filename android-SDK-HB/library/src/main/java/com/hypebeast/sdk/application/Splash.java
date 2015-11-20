@@ -68,6 +68,8 @@ public abstract class Splash extends AppCompatActivity {
                 // app-defined int constant. The callback method gets the
                 // result of the request.
             }
+        } else {
+            synchronizeData();
         }
     }
 

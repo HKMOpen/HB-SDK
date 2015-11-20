@@ -21,9 +21,11 @@ import com.hypebeast.sdk.api.resources.hbstore.Brand;
 import com.hypebeast.sdk.api.resources.hbstore.Overhead;
 import com.hypebeast.sdk.api.resources.hbstore.Products;
 import com.hypebeast.sdk.api.resources.hbstore.SingleProduct;
+import com.hypebeast.sdk.application.hbx.ConfigurationSync;
 import com.squareup.okhttp.OkHttpClient;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -55,6 +57,7 @@ public class HBStoreApiClient extends Client {
      */
     private RestAdapter mLoginAdapter;
     private static HBStoreApiClient static_instance;
+    private ConfigurationSync data;
 
     @Deprecated
     public static HBStoreApiClient newInstance() {
@@ -267,28 +270,17 @@ public class HBStoreApiClient extends Client {
         return check_saved_wishlist(realm, product_id);
     }
 
-    private boolean check_saved_keyword(Context basethread, String keyword) {
-        Realm realm = Realm.getInstance(basethread);
-        RealmQuery<QLRealmString> query = realm.where(QLRealmString.class);
-        query.equalTo("val", keyword);
-        // Execute the query:
-        RealmResults<QLRealmString> result = query.findAll();
-        return result.size() > 0;
+    public void addKeyword(String keyword) {
+        if (data != null) {
+            data.addKeyword(keyword);
+            data.save_dictionary_auto();
+        }
     }
 
-    public void addKeyWord(Context basethread, String keyword) {
-        Realm realm = Realm.getInstance(basethread);
-        if (check_saved_keyword(basethread, keyword)) return;
-        realm.beginTransaction();
-        QLRealmString _ql = realm.createObject(QLRealmString.class);
-        _ql.setVal(keyword);
-        realm.commitTransaction();
+    public HBStoreApiClient hookSyncTasker(ConfigurationSync instance) {
+        data = instance;
+        data.load_dictionary_auto();
+        return this;
     }
 
-    public String[] getSavedKeywords(Context base) {
-        Realm realm = Realm.getInstance(base);
-        RealmQuery<QLRealmString> query = realm.where(QLRealmString.class);
-        RealmResults<QLRealmString> result = query.findAll();
-        return result.toArray(new String[result.size()]);
-    }
 }
