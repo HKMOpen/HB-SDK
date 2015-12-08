@@ -1,1 +1,1 @@
-include ':library', ':hbeditorialtest'
+include ':library', ':hbeditorialtest', ':hbxtest'

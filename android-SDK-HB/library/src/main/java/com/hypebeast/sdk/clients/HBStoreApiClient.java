@@ -138,6 +138,12 @@ public class HBStoreApiClient extends Client {
                 .build();
     }
 
+    /**
+     * this will only returns the authentication in string as result
+     *
+     * @return Authentication
+     */
+    @Deprecated
     public Authentication createAuthentication() {
         RestAdapter mAdapter = new RestAdapter.Builder()
                 .setEndpoint(AUTHENTICATION)
@@ -145,6 +151,21 @@ public class HBStoreApiClient extends Client {
                 .setErrorHandler(handlerError)
                 .setRequestInterceptor(getIn())
                 .setConverter(new StringConverter())
+                .build();
+
+        return mAdapter.create(Authentication.class);
+    }
+
+    public Authentication createAuthenticationHBX() {
+        /**
+         * create the authentication in here
+         */
+        RestAdapter mAdapter = new RestAdapter.Builder()
+                .setEndpoint(BASE_URL_STORE)
+                .setLogLevel(RestAdapter.LogLevel.HEADERS)
+                .setErrorHandler(handlerError)
+                .setRequestInterceptor(getIn())
+                .setConverter(new GsonConverter(gsonsetup))
                 .build();
 
         return mAdapter.create(Authentication.class);
@@ -202,12 +223,21 @@ public class HBStoreApiClient extends Client {
     }
 
     /**
+     * set the cookie session Id out of the method
+     *
+     * @param session_code session code
+     */
+    public void setCookieSessionId(final String session_code) {
+        getCookieClient().set_cookie_value("PHPSYLIUSID", session_code);
+    }
+
+    /**
      * the get the number of current shopping cart item count
      *
      * @return the count in number
      */
     public int retrieve_current_shopping_cart_items() {
-        String number = getCookieClient().getValue("_store_item_count");
+        final String number = getCookieClient().getValue("_store_item_count");
         return Integer.parseInt(number);
     }
 

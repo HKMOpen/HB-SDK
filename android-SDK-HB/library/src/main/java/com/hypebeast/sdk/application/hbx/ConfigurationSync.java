@@ -6,7 +6,10 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.hypebeast.sdk.Constants;
+import com.hypebeast.sdk.Util.CookieHanger;
 import com.hypebeast.sdk.api.exception.ApiException;
+import com.hypebeast.sdk.api.model.hypebeaststore.ResLoginCheck;
+import com.hypebeast.sdk.api.model.hypebeaststore.ResLoginPassword;
 import com.hypebeast.sdk.api.model.hypebeaststore.ResponseMobileOverhead;
 import com.hypebeast.sdk.api.model.symfony.Config;
 import com.hypebeast.sdk.api.resources.hbstore.Authentication;
@@ -32,10 +35,12 @@ public class ConfigurationSync extends ApplicationBase {
     public static ConfigurationSync instance;
     private Realm realm;
     public static final String PREFERENCE_FOUNDATION = "foundationfile";
-    public static final String ACCOUNT_USER = "hbxuser";
-    public static final String ACCOUNT_PASS = "hbxpass";
+    public static final String ACCOUNT_USER_ID = "hbx_user_uid";
+    public static final String ACCOUNT_SIG = "hbx_PHPSYLIUSID";
+    public static final String ACCOUNT_USER = "hbx_username";
+    public static final String ACCOUNT_PASS = "hbx_password";
     public static final String PREFERENCE_FOUNDATION_REGISTRATION = "regtime";
-
+    private String error_messages;
     private Overhead mOverheadRequest;
     private ResponseMobileOverhead mFoundation;
     private HBStoreApiClient client;
@@ -69,7 +74,7 @@ public class ConfigurationSync extends ApplicationBase {
         client = HBStoreApiClient.getInstance(app);
         //client.setLanguageBase(HBEditorialClient.BASE_EN);
         mOverheadRequest = client.createOverHead();
-        request_login = client.createAuthentication();
+        request_login = client.createAuthenticationHBX();
         addInterface(mListener);
     }
 
@@ -77,6 +82,8 @@ public class ConfigurationSync extends ApplicationBase {
     protected void removeAllData() {
         saveInfo(PREFERENCE_FOUNDATION, "");
         saveInfo(PREFERENCE_FOUNDATION_REGISTRATION, "");
+        saveInfo(ACCOUNT_USER_ID, "");
+        saveInfo(ACCOUNT_SIG, "");
         saveInfo(ACCOUNT_USER, "");
         saveInfo(ACCOUNT_PASS, "");
     }
@@ -94,6 +101,9 @@ public class ConfigurationSync extends ApplicationBase {
         //mListeners.clear();
     }
 
+    /**
+     * completed the actions from the login process
+     */
     private void executeListeners() {
         if (mListener != null) mListener.syncDone(instance, mFoundation);
     }
@@ -106,34 +116,85 @@ public class ConfigurationSync extends ApplicationBase {
 
     private void syncCheckLogined() {
         try {
-
-            String user = loadRef(ACCOUNT_USER);
-            String pass = loadRef(ACCOUNT_PASS);
+            final String user = loadRef(ACCOUNT_USER);
+            final String pass = loadRef(ACCOUNT_PASS);
+            final String sig = loadRef(ACCOUNT_SIG);
             if (user.equalsIgnoreCase("none") || pass.equalsIgnoreCase("none")) {
-                executeListeners();
-                return;
+                if (!sig.equalsIgnoreCase("none")) {
+                    login_v1_authentication(sig);
+                } else {
+                    Log.d("loginHBX", "no authentication found and continue..");
+                    executeListeners();
+                    return;
+                }
             } else {
-                request_login.checkLoginStatus(user, pass, new Callback<String>() {
-                    @Override
-                    public void success(String s, Response response) {
-                        isLogin = true;
-                        executeListeners();
-                        Log.d("loginHBX", "login result : " + s);
-                    }
-
-                    @Override
-                    public void failure(RetrofitError e) {
-                        //if (mListener != null) mListener.error(e.getMessage());
-                        Log.d("loginHBX", e.getMessage());
-                    }
-                });
+                login_v2_authentication(user, pass);
             }
-
-
         } catch (ApiException e) {
-            Log.d("loginHBX", e.getMessage());
+            error_messages = "errors from the login process: " + e.getMessage();
+            Log.d("loginHBX", error_messages);
+            triggerFatalError(error_messages);
             //  if (mListener != null) mListener.error(e.getMessage());
         }
+    }
+
+    /**
+     * checking the login via session ID or token
+     *
+     * @param sig the session id in the cookie
+     * @throws ApiException the error
+     */
+    private void login_v1_authentication(final String sig) throws ApiException {
+        Log.d("loginHBX", "start authentication with session ID");
+        getInstanceHBClient().setCookieSessionId(sig);
+        request_login.checkLoginV1(new Callback<ResLoginCheck>() {
+            @Override
+            public void success(ResLoginCheck s, Response response) {
+                isLogin = true;
+                executeListeners();
+                Log.d("loginHBX", "login result : " + s);
+            }
+
+            @Override
+            public void failure(RetrofitError e) {
+                //if (mListener != null) mListener.error(e.getMessage());
+                Log.d("loginHBX", e.getMessage());
+                executeListeners();
+            }
+        });
+    }
+
+    /**
+     * checking the login via user credential
+     *
+     * @param user user name
+     * @param pass password
+     * @throws ApiException the error
+     */
+    public void login_v2_authentication(final String user, final String pass) throws ApiException {
+        Log.d("loginHBX", "start authentication with user pass and id");
+        request_login.checkLoginV2(user, pass, new Callback<ResLoginPassword>() {
+            @Override
+            public void success(ResLoginPassword s, Response response) {
+                isLogin = true;
+                //save user password and the username
+                saveInfo(ACCOUNT_USER, user);
+                saveInfo(ACCOUNT_PASS, pass);
+                saveInfo(ACCOUNT_SIG, s.session_id);
+                instance.getInstanceHBClient().setCookieSessionId(s.session_id);
+                Log.d("loginHBX",
+                        "login result successful: " + user
+                                + "\nPassword:" + pass +
+                                "\nSessionID:" + s.session_id);
+                executeListeners();
+            }
+
+            @Override
+            public void failure(RetrofitError e) {
+                Log.d("loginHBX", e.getMessage());
+                executeListeners();
+            }
+        });
     }
 
     private void syncWorkerThread() {
@@ -152,14 +213,17 @@ public class ConfigurationSync extends ApplicationBase {
 
                 @Override
                 public void failure(RetrofitError error) {
-                    if (mListener != null) mListener.error(error.getMessage());
+                    triggerFatalError(error.getMessage());
                 }
             });
         } catch (ApiException e) {
-            if (mListener != null) mListener.error(e.getMessage());
+            triggerFatalError(e.getMessage());
         }
     }
 
+    private void triggerFatalError(final String error_messages) {
+        if (mListener != null) mListener.error(error_messages);
+    }
 
     private void init() {
         String data = loadRef(PREFERENCE_FOUNDATION);
@@ -189,17 +253,4 @@ public class ConfigurationSync extends ApplicationBase {
     public ResponseMobileOverhead getFoundation() {
         return mFoundation;
     }
-
- /*   public configbank getByLanguage(String lang) {
-        if (lang.equals("en")) {
-            return mFoundation.english;
-        } else if (lang.equals("zh_CN")) {
-            return mFoundation.chinese_simplified;
-        } else if (lang.equals("ja")) {
-            return mFoundation.japanese;
-        } else if (lang.equals("zh_TW")) {
-            return mFoundation.chinese_traditional;
-        } else
-            return mFoundation.english;
-    }*/
 }

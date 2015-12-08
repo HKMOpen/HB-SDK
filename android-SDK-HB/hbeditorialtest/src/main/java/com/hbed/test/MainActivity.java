@@ -2,25 +2,27 @@ package com.hbed.test;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.preference.PreferenceManager;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 
+import com.greysonparrelli.permiso.Permiso;
 import com.hbed.test.Dialog.ErrorMessage;
 import com.hypebeast.sdk.api.model.hbeditorial.Foundation;
 import com.hypebeast.sdk.application.Splash;
 import com.hypebeast.sdk.application.hypebeast.ConfigurationSync;
-import com.hypebeast.sdk.application.hypebeast.sync;
 import com.hypebeast.sdk.application.hypebeast.syncDebug;
 import com.hypebeast.sdk.clients.HBEditorialClient;
 
 public class MainActivity extends Splash {
+    @Override
+    protected void V23permission_request() {
+        Permiso.getInstance().requestPermissions(
+                getPermProcess(),
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.INTERNET,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+        );
+    }
 
 
     @Override

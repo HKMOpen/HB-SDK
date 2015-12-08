@@ -3,6 +3,7 @@ package com.hypebeast.sdk.Util;
 import android.annotation.TargetApi;
 import android.os.Build;
 import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
 
 /**
  * Created by hesk on 29/9/15.
@@ -57,4 +58,35 @@ public class CookieHanger {
         return "";
     }
 
+    public void set_cookie_value(final String session_id, final String session_token_val) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(session_id);
+        sb.append("=");
+        sb.append(session_token_val);
+        sb.append(";");
+        //Clear old cookies
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            System.out.println(CookieManager.getInstance().hasCookies());
+            instance.removeAllCookies(null);
+            instance.flush();
+            instance.setAcceptCookie(true);
+            instance.setCookie(domain, sb.toString());
+            System.out.println(CookieManager.getInstance().hasCookies());
+        } else {
+            CookieManager.getInstance().removeAllCookie();
+            CookieSyncManager.getInstance().sync();
+            CookieManager.getInstance().setCookie(domain, session_id);
+            //Save the two cookies: auth token and session info
+            // List<Cookie> cookies = httpclient.getCookieStore().getCookies();
+            // if (cookies != null) {
+            //  for (Cookie cookie : cookies) {
+            //  String cookieString = cookie.getName() + "=" + cookie.getValue() + "; Domain=" + cookie.getDomain();
+            CookieManager.getInstance().setCookie(domain, sb.toString());
+            //  }
+            System.out.println(CookieManager.getInstance().hasCookies()); //Prints false in 2.3,  true in 4.0.3
+            CookieSyncManager.getInstance().sync();
+            System.out.println(CookieManager.getInstance().hasCookies()); //Also prints false in 2.3 and true in 4.0.3
+        }
+    }
 }
+

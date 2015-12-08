@@ -44,29 +44,39 @@ public abstract class Splash extends AppCompatActivity {
     @LayoutRes
     protected abstract int getLayoutId();
 
+
+    protected Permiso.IOnPermissionResult getPermProcess(){
+        return new Permiso.IOnPermissionResult() {
+           @Override
+           public void onPermissionResult(Permiso.ResultSet resultSet) {
+                  if (resultSet.areAllPermissionsGranted()) {
+              // Permission granted!
+                      onPermissionGranted();
+                    } else {
+                 // Permission denied.
+                     onPermissionDenied();
+             }
+           }
+
+           @Override
+          public void onRationaleRequested(Permiso.IOnRationaleProvided callback, String... permissions) {
+             Permiso.getInstance().showRationaleInDialog("Request permissions", permission_message(), null, callback);
+             }
+         };
+    }
+
+
     protected void V23permission_request() {
         Permiso.getInstance().requestPermissions(
-                new Permiso.IOnPermissionResult() {
-                    @Override
-                    public void onPermissionResult(Permiso.ResultSet resultSet) {
-                        if (resultSet.areAllPermissionsGranted()) {
-                            // Permission granted!
-                            onPermissionGranted();
-                        } else {
-                            // Permission denied.
-                            onPermissionDenied();
-                        }
-                    }
-
-                    @Override
-                    public void onRationaleRequested(Permiso.IOnRationaleProvided callback, String... permissions) {
-                        Permiso.getInstance().showRationaleInDialog("Request permissions", permission_message(), null, callback);
-                    }
-                },
+                getPermProcess(),
                 Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.INTERNET,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.ACCESS_NETWORK_STATE ,
+                Manifest.permission.RECEIVE_BOOT_COMPLETED ,
+                Manifest.permission.VIBRATE,
+                Manifest.permission.GET_ACCOUNTS,
+                Manifest.permission.WAKE_LOCK
         );
     }
 
