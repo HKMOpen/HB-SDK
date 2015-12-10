@@ -1,6 +1,7 @@
 package com.hkm.hbxtest;
 
 import android.Manifest;
+import android.os.Bundle;
 
 import com.greysonparrelli.permiso.Permiso;
 import com.hkm.hbxtest.Dialog.ErrorMessage;
@@ -8,6 +9,7 @@ import com.hypebeast.sdk.api.model.hypebeaststore.ResponseMobileOverhead;
 import com.hypebeast.sdk.application.Splash;
 import com.hypebeast.sdk.application.hbx.ConfigurationSync;
 import com.hypebeast.sdk.application.hbx.sync;
+import com.hypebeast.sdk.clients.HBStoreApiClient;
 
 public class MainActivity extends Splash {
 
@@ -42,13 +44,19 @@ public class MainActivity extends Splash {
     protected void synchronizeData() {
         ConfigurationSync.with(getApplication(), new sync() {
             @Override
-            public void syncDone(ConfigurationSync conf, ResponseMobileOverhead data) {
+            public void syncDone(final ConfigurationSync conf, ResponseMobileOverhead data) {
                 StringBuilder h = new StringBuilder();
                 h.append("Successfully synced data. Now it will be closed ");
+                HBStoreApiClient.getInstance(getApplication()).hookSyncTasker(conf);
                 ErrorMessage.alert(h.toString(), getFragmentManager(), new Runnable() {
                     @Override
                     public void run() {
-                        finish();
+
+                     if(conf.isLoginStatusValid()){
+                         bind_has_login();
+                     }else{
+                         bind_not_login();
+                     }
                     }
                 });
             }
@@ -64,4 +72,27 @@ public class MainActivity extends Splash {
             }
         });
     }
+
+
+    /**
+     * extensive conten start from here
+     */
+    private void bind_not_login() {
+        getFragmentManager()
+                .beginTransaction()
+                .add(R.id.contentholder, loginfb.newInstance(loginfb.getURL(getString(R.string.url_account_web_login))), "fblogin")
+                .addToBackStack(null)
+                .commit();
+    }
+
+    private void bind_has_login() {
+        getFragmentManager()
+                .beginTransaction()
+                .add(R.id.contentholder,
+                       new LoginView(),
+                        "haslogin")
+                .addToBackStack(null)
+                .commit();
+    }
+
 }

@@ -3,6 +3,7 @@ package com.hypebeast.sdk.application.hbx;
 import android.app.Application;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.hypebeast.sdk.Constants;
@@ -101,6 +102,14 @@ public class ConfigurationSync extends ApplicationBase {
         //mListeners.clear();
     }
 
+    public void logout() {
+        saveInfo(ACCOUNT_USER_ID, "");
+        saveInfo(ACCOUNT_SIG, "");
+        saveInfo(ACCOUNT_USER, "");
+        saveInfo(ACCOUNT_PASS, "");
+        isLogin = false;
+    }
+
     /**
      * completed the actions from the login process
      */
@@ -112,6 +121,11 @@ public class ConfigurationSync extends ApplicationBase {
 
     public boolean isLoginStatusValid() {
         return isLogin;
+    }
+
+    public void setLoginSuccess(final @Nullable String session_key_id) {
+        saveInfo(ACCOUNT_SIG, session_key_id);
+        isLogin = true;
     }
 
     private void syncCheckLogined() {
@@ -128,7 +142,7 @@ public class ConfigurationSync extends ApplicationBase {
                     return;
                 }
             } else {
-                login_v2_authentication(user, pass);
+                login_v2_authentication(user, pass, null);
             }
         } catch (ApiException e) {
             error_messages = "errors from the login process: " + e.getMessage();
@@ -158,20 +172,23 @@ public class ConfigurationSync extends ApplicationBase {
             @Override
             public void failure(RetrofitError e) {
                 //if (mListener != null) mListener.error(e.getMessage());
-                Log.d("loginHBX", e.getMessage());
+                //login failure
+                Log.d("loginHBX", "failure to login= " + e.getMessage());
                 executeListeners();
             }
         });
     }
 
+
     /**
      * checking the login via user credential
      *
-     * @param user user name
-     * @param pass password
-     * @throws ApiException the error
+     * @param user   user name or email
+     * @param pass   the password
+     * @param mlogin the login call back
+     * @throws ApiException the exception
      */
-    public void login_v2_authentication(final String user, final String pass) throws ApiException {
+    public void login_v2_authentication(final String user, final String pass, final @Nullable logincb mlogin) throws ApiException {
         Log.d("loginHBX", "start authentication with user pass and id");
         request_login.checkLoginV2(user, pass, new Callback<ResLoginPassword>() {
             @Override
@@ -186,13 +203,16 @@ public class ConfigurationSync extends ApplicationBase {
                         "login result successful: " + user
                                 + "\nPassword:" + pass +
                                 "\nSessionID:" + s.session_id);
-                executeListeners();
+
+                if (mlogin != null) mlogin.success();
+                else executeListeners();
             }
 
             @Override
             public void failure(RetrofitError e) {
                 Log.d("loginHBX", e.getMessage());
-                executeListeners();
+                if (mlogin != null) mlogin.failure();
+                else executeListeners();
             }
         });
     }

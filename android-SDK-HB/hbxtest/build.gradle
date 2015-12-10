@@ -18,11 +18,17 @@ android {
         }
     }
 }
+repositories {
+    maven { url "http://dl.bintray.com/jjhesk/maven" }
+    maven { url 'http://dl.bintray.com/madcyph3r/maven/' }
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+}
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.1.1'
     compile 'com.android.support:design:23.1.1'
+    compile 'com.hkm.ezwebview:library:1.2.0'
     compile project(':library')
 }

@@ -142,11 +142,13 @@ public interface Products {
 
     @GET("/brands/{brand_name}")
     void bybrand(final @Path("brand_name") String brand_name,
+                 final @Query("limit") int limit,
                  final Callback<ReponseNormal> result) throws ApiException;
 
     @GET("/brands/{brand_name}")
     void bybrand(final @Path("brand_name") String brand_name,
                  final @Query("filter") String jsonString,
+                 final @Query("limit") int limit,
                  final Callback<ReponseNormal> result) throws ApiException;
 
 

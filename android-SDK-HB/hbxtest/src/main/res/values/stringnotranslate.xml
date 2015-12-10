@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="facebook_app_id">166540330361423</string>
+    <string name="url_forgot_password">http://hypebeast.com/forgot-password-request</string>
+    <string name="url_account_register">http://store.hypebeast.com/register</string>
+    <string name="url_account_review">http://store.hypebeast.com/account</string>
+    <string name="url_account_web_login">http://store.hypebeast.com/login</string>
+    <string name="url_delivery_tracking">166540330361423</string>
+    <string name="url_facebook_login">http://store.hypebeast.com/login/facebook</string>
+    <string name="url_store_domain">http://store.hypebeast.com/</string>
+    <string name="uri_store_domain">store.hypebeast.com</string>
+</resources>

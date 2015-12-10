@@ -18,6 +18,19 @@ public class Variant {
     private boolean is_in_stock;
     @SerializedName("is_last_one")
     private boolean is_last_one;
+    /**
+     * added back for the selection filter
+     */
+    @SerializedName("on_hand")
+    private int on_hand;
+    @SerializedName("on_hold")
+    private int on_hold;
+
+
+    @SerializedName("sku")
+    private String sku;
+    @SerializedName("update_at")
+    private String update_time;
 
     public enum Type {
         OUT_OF_STOCK,
@@ -101,4 +114,7 @@ public class Variant {
         return stock_status == LAST_ONE;
     }
 
+    public int getOn_hand() {
+        return on_hand;
+    }
 }

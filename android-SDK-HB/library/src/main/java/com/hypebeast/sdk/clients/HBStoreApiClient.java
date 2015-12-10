@@ -2,6 +2,7 @@ package com.hypebeast.sdk.clients;
 
 import android.content.Context;
 import android.os.Build;
+import android.util.Log;
 
 import com.google.gson.GsonBuilder;
 import com.hypebeast.sdk.Constants;
@@ -208,6 +209,8 @@ public class HBStoreApiClient extends Client {
                 request.addHeader("User-Agent", get_USER_AGENT());
                 request.addHeader("Accept", "application/json");
                 request.addHeader("X-Api-Version", "2.0");
+                //String cookietst = getCookieClient().getRaw();
+                //Log.d("loginHBX", "cookie set=" + cookietst);
                 request.addHeader("Cookie", getCookieClient().getRaw());
                 try {
                     if (Connectivity.isConnected(context)) {
@@ -229,6 +232,26 @@ public class HBStoreApiClient extends Client {
      */
     public void setCookieSessionId(final String session_code) {
         getCookieClient().set_cookie_value("PHPSYLIUSID", session_code);
+    }
+
+    public void logout() throws NullPointerException {
+        if (data == null)
+            throw new NullPointerException("ConfigurationSync is not defined. Please make sure the {@ hookSyncTask} is triggered.");
+        data.logout();
+    }
+
+    public void saveTokenAfterSuccessLogin() throws NullPointerException {
+        final String session_code = getCookieClient().getValue("PHPSYLIUSID");
+        if (data == null)
+            throw new NullPointerException("ConfigurationSync is not defined. Please make sure the {@ hookSyncTask} is triggered.");
+        Log.d("loginHBX", "retrieve cookie @ " + session_code);
+        data.setLoginSuccess(session_code);
+    }
+
+    public boolean isCurrentLogin() throws NullPointerException {
+        if (data == null)
+            throw new NullPointerException("ConfigurationSync is not defined. Please make sure the {@ hookSyncTask} is triggered.");
+        return data.isLoginStatusValid();
     }
 
     /**

@@ -139,6 +139,11 @@ public class Product {
         return variants.get(0).getId();
     }
 
+    public Variant getMasterVariant() throws Exception {
+        if (variants.size() == 0) throw new Exception("no data found from the variance - master");
+        return variants.get(0);
+    }
+
     public List<Attributes> getAttributes() {
         return attributes;
     }
