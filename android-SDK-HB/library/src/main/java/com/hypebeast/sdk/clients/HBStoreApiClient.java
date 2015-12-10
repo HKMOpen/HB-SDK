@@ -15,7 +15,7 @@ import com.hypebeast.sdk.api.gson.StringConverter;
 import com.hypebeast.sdk.api.gson.WordpressConversion;
 import com.hypebeast.sdk.api.model.hypebeaststore.ResponseMobileOverhead;
 import com.hypebeast.sdk.api.model.symfony.Product;
-import com.hypebeast.sdk.api.realm.QLRealmString;
+import com.hypebeast.sdk.api.model.symfony.wish;
 import com.hypebeast.sdk.api.realm.hbx.rProduct;
 import com.hypebeast.sdk.api.resources.hbstore.Authentication;
 import com.hypebeast.sdk.api.resources.hbstore.Brand;
@@ -23,25 +23,18 @@ import com.hypebeast.sdk.api.resources.hbstore.Overhead;
 import com.hypebeast.sdk.api.resources.hbstore.Products;
 import com.hypebeast.sdk.api.resources.hbstore.SingleProduct;
 import com.hypebeast.sdk.application.hbx.ConfigurationSync;
-import com.squareup.okhttp.OkHttpClient;
+import com.hypebeast.sdk.application.hbx.WishlistSync;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-import io.realm.Realm;
-import io.realm.RealmQuery;
-import io.realm.RealmResults;
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
-import retrofit.client.OkClient;
 import retrofit.converter.GsonConverter;
 
 /**
  * Created by hesk on 30/6/15.
  */
-public class HBStoreApiClient extends Client {
+public class HBStoreApiClient extends Client implements WishlistSync.syncResult {
     /**
      * Base URL for all Disqus endpoints
      */
@@ -59,6 +52,7 @@ public class HBStoreApiClient extends Client {
     private RestAdapter mLoginAdapter;
     private static HBStoreApiClient static_instance;
     private ConfigurationSync data;
+    private WishlistSync mWishlist;
 
     @Deprecated
     public static HBStoreApiClient newInstance() {
@@ -89,12 +83,18 @@ public class HBStoreApiClient extends Client {
         }
     }
 
+    /**
+     * please do not use this as this is no longer supported.
+     * It need to initiate with Context
+     */
+    @Deprecated
     public HBStoreApiClient() {
         super();
     }
 
     public HBStoreApiClient(Context context) {
         super(context);
+        mWishlist = new WishlistSync(context);
     }
 
     private void setContext(Context c) {
@@ -248,6 +248,7 @@ public class HBStoreApiClient extends Client {
         data.setLoginSuccess(session_code);
     }
 
+
     public boolean isCurrentLogin() throws NullPointerException {
         if (data == null)
             throw new NullPointerException("ConfigurationSync is not defined. Please make sure the {@ hookSyncTask} is triggered.");
@@ -265,62 +266,27 @@ public class HBStoreApiClient extends Client {
     }
 
     public void addToWishList(Context basethread, Product copyproduct) {
-        Realm realm = Realm.getInstance(basethread);
-        if (check_saved_wishlist(realm, copyproduct.product_id)) return;
-        realm.beginTransaction();
-        rProduct _product = realm.createObject(rProduct.class);
-        _product.setLinks(copyproduct._links.self.href);
-        _product.setImageHead(copyproduct.images.get(0).data.medium.href);
-        _product.setProduct_id(copyproduct.product_id);
-        _product.setCreated_at(copyproduct.created_at);
-        _product.setDescription(copyproduct.description);
-        _product.setName(copyproduct.name);
-        _product.setPrice(copyproduct.price);
-        _product.setBrandname(copyproduct.get_brand_name());
-        realm.commitTransaction();
+        this.mWishlist.addToWishList(copyproduct);
     }
 
     public void flushWishList(Context basethread) {
-        Realm realm = Realm.getInstance(basethread);
-        RealmResults<rProduct> copies = realm.where(rProduct.class).findAll();
-        realm.beginTransaction();
-        copies.clear();
-        realm.commitTransaction();
+        mWishlist.flushWishList();
     }
 
     public void removeItem(Context basethread, long product_id) {
-        Realm realm = Realm.getInstance(basethread);
-        RealmResults<rProduct> copies = realm.where(rProduct.class).equalTo("product_id", product_id).findAll();
-        realm.beginTransaction();
-        copies.clear();
-        realm.commitTransaction();
+        mWishlist.removeItem(product_id);
     }
 
     public void removeItem(Context basethread, rProduct item) {
-        Realm realm = Realm.getInstance(basethread);
-        RealmResults<rProduct> copies = realm.where(rProduct.class).equalTo("product_id", item.getProduct_id()).findAll();
-        realm.beginTransaction();
-        copies.clear();
-        realm.commitTransaction();
+        mWishlist.removeItem(basethread, item);
     }
 
     public List<rProduct> getWishListAll(Context basethread) {
-        Realm realm = Realm.getInstance(basethread);
-        RealmResults<rProduct> copies = realm.where(rProduct.class).findAll();
-        return copies;
+        return mWishlist.getWishListAll();
     }
 
-    public boolean check_saved_wishlist(Realm realm, long product_id) {
-        RealmQuery<rProduct> query = realm.where(rProduct.class);
-        query.equalTo("product_id", product_id);
-        // Execute the query:
-        RealmResults<rProduct> result = query.findAll();
-        return result.size() > 0;
-    }
-
-    public boolean check_saved_wishlist(Context basethread, long product_id) {
-        Realm realm = Realm.getInstance(basethread);
-        return check_saved_wishlist(realm, product_id);
+    public boolean check_saved_wishlist(long product_id) {
+        return mWishlist.check_saved_wishlist(product_id);
     }
 
     public void addKeyword(String keyword) {
@@ -335,5 +301,46 @@ public class HBStoreApiClient extends Client {
         data.load_dictionary_auto();
         return this;
     }
+
+    protected WishlistSync.syncResult sync_result_wishlist;
+
+    public HBStoreApiClient setInterceptWishListProcess(WishlistSync.syncResult sync) {
+        sync_result_wishlist = sync;
+        return this;
+    }
+
+    public void requestWishList() {
+        if (isCurrentLogin()) {
+            if (sync_result_wishlist == null) {
+                mWishlist.syncInit(this, this);
+            } else {
+                mWishlist.syncInit(this, sync_result_wishlist);
+            }
+        }
+    }
+
+    public void requestUpSyncWishList() {
+        if (isCurrentLogin()) {
+            mWishlist.syncUp();
+        }
+    }
+
+    @Override
+    public void successDownStream(List<wish> wistlist) {
+
+    }
+
+    @Override
+    public void successUpStream() {
+
+    }
+
+    @Override
+    public void failure(String error_message_out) {
+
+    }
+
+/*
+    optimizelyEndUserId=oeu1427704786547r0.16302457707934082; PHPSYLIUSID=hotrhic7v0renb44306oc60dl7; wordpress_logged_in_48e9f22ffa424b200d04b29b8dcb2a90=ooxhesk%40yahoo.com.hk%7C1460701032%7C97c1e6d85a010990a1cfcfc42c1b8c6d; __gads=ID=80b6bbb1c91b0d2e:T=1431330005:S=ALNI_MaTg8WA4ot-TFrR9dcH1kz2o1cxTw; optimizelySegments=%7B%222652000965%22%3A%22false%22%2C%222671940073%22%3A%22gc%22%2C%222673440032%22%3A%22false%22%2C%222682660012%22%3A%22referral%22%2C%222685030137%22%3A%22campaign%22%2C%222686260265%22%3A%22gc%22%7D; optimizelyBuckets=%7B%7D; __qca=P0-479511623-1431489547842; geo_redirect_off=yes; wooTracker=CbeRWN9ZlwnU; wooTracker=CbeRWN9ZlwnU; _chartbeat2=CORluQBqZeUOKr5xy.1427704788401.1437459868424.0000000000000011; _ga=GA1.2.434876542.1427704787; gsScrollPos=; hbx_catalog_country=HK; __zlcmid=U0eXYMtAwZnotG; _store_item_count=1*/
 
 }

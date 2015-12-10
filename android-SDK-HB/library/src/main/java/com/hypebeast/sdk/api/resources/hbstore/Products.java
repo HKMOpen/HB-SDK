@@ -2,6 +2,7 @@ package com.hypebeast.sdk.api.resources.hbstore;
 
 import com.hypebeast.sdk.api.exception.ApiException;
 import com.hypebeast.sdk.api.model.hypebeaststore.ReponseNormal;
+import com.hypebeast.sdk.api.model.hypebeaststore.ResponseProductList;
 import com.hypebeast.sdk.api.model.hypebeaststore.ResponseSingleProduct;
 
 
@@ -142,16 +143,50 @@ public interface Products {
 
     @GET("/brands/{brand_name}")
     void bybrand(final @Path("brand_name") String brand_name,
+
+                 final Callback<ReponseNormal> result) throws ApiException;
+
+    @GET("/brands/{brand_name}")
+    void bybrand(final @Path("brand_name") String brand_name,
+                 final @Query("page") int page_num,
                  final @Query("limit") int limit,
                  final Callback<ReponseNormal> result) throws ApiException;
 
     @GET("/brands/{brand_name}")
     void bybrand(final @Path("brand_name") String brand_name,
                  final @Query("filter") String jsonString,
-                 final @Query("limit") int limit,
                  final Callback<ReponseNormal> result) throws ApiException;
 
 
+    @GET("/brands/{brand_name}")
+    void bybrand(final @Path("brand_name") String brand_name,
+                 final @Query("filter") String jsonString,
+                 final @Query("page") int page_num,
+                 final @Query("limit") int limit,
+                 final Callback<ReponseNormal> result) throws ApiException;
+
+    /**
+     * @param page_num the page number
+     * @param result   the result of the product list in wish list
+     * @throws ApiException its the exception
+     */
+    @GET("/account/wishlist/")
+    void wishlist(
+            final @Query("page") int page_num,
+            final Callback<ResponseProductList> result) throws ApiException;
+
+    /**
+     * login account with adding new product id into the list
+     *
+     * @param result
+     * @throws ApiException
+     */
+    @GET("/account/wishlist/add/{product_id}")
+    void addItemWishList(
+            final @Path("product_id") long product_id_to_add,
+            final Callback<String> result) throws ApiException;
+
+
     @GET("/")
     void general(
             final @Query("filter") String jsonString,
@@ -177,5 +212,6 @@ public interface Products {
     void general(
             final Callback<ReponseNormal> result
     ) throws ApiException;
+
 
 }

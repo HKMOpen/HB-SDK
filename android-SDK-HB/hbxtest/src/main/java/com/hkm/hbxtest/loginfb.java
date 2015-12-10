@@ -69,7 +69,7 @@ public class loginfb extends BasicWebViewNormal {
                 @Override
                 public void run() {
                     getFragmentManager().beginTransaction().replace(R.id.contentholder,
-                            LoginView.instantiate(getActivity(), "Login"), "afterlogin")
+                            new LoginView(), "afterlogin")
                             .addToBackStack(null)
                             .commit();
                 }

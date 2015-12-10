@@ -5,6 +5,7 @@ import com.hypebeast.sdk.api.model.Alternative;
 import com.hypebeast.sdk.api.model.symfony.Product;
 import com.hypebeast.sdk.api.model.symfony.embededList;
 import com.hypebeast.sdk.api.model.symfony.FilterGroup;
+import com.hypebeast.sdk.api.model.symfony.wish;
 
 import java.util.List;
 
@@ -35,6 +36,10 @@ public class ResponseProductList extends Alternative {
 
     public List<Product> getlist() {
         return embededitems.productswrap;
+    }
+
+    public List<wish> getWishes() {
+        return embededitems.wishlist;
     }
 
     public FilterGroup getfacets() {
