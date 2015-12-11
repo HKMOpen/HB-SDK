@@ -1,7 +1,10 @@
 package com.hypebeast.sdk.application.hbx;
 
 import android.content.Context;
+import android.support.annotation.CheckResult;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.hypebeast.sdk.api.exception.ApiException;
 import com.hypebeast.sdk.api.model.hypebeaststore.ResponseProductList;
@@ -11,9 +14,9 @@ import com.hypebeast.sdk.api.realm.hbx.rProduct;
 import com.hypebeast.sdk.api.resources.hbstore.Products;
 import com.hypebeast.sdk.clients.HBStoreApiClient;
 
+import net.sjava.advancedasynctask.AdvancedAsyncTask;
+
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -27,7 +30,7 @@ import retrofit.client.Response;
 /**
  * Created by hesk on 10/12/15.
  */
-public class WishlistSync implements Callback<ResponseProductList> {
+public class WishlistSync {
     private static final int LIMIT = 10;
     private int totalpages = 1;
     private int current_page = 1;
@@ -38,60 +41,20 @@ public class WishlistSync implements Callback<ResponseProductList> {
     private List<wish> server_list = new ArrayList<wish>();
     private Context context;
     private int worker_status;
-    public static int
+    public static final int
             STATUS_IDEAL = 1,
             STATUS_DOWN_STREAM = 2,
             STATUS_UP_STREAM = 3;
+
+    @IntDef({STATUS_IDEAL, STATUS_DOWN_STREAM, STATUS_UP_STREAM})
+    public @interface WishlistSyncStatus {
+
+    }
 
     public WishlistSync(Context _context) {
         context = _context;
         worker_status = STATUS_IDEAL;
     }
-
-    /**
-     * Successful HTTP response.
-     *
-     * @param responseProductList the product list
-     * @param response            the response retrofit
-     */
-    @Override
-    public void success(ResponseProductList responseProductList, Response response) {
-        totalpages = responseProductList.totalpages();
-        if (responseProductList.getWishes().size() < LIMIT) {
-
-            server_list.addAll(responseProductList.getWishes());
-
-            downstreamDoneTrigger();
-            return;
-        } else if (current_page < totalpages) {
-            server_list.addAll(server_list.size(), responseProductList.getWishes());
-            ++current_page;
-            try {
-                client.wishlist(current_page, this);
-            } catch (ApiException e) {
-                //there is an error to get the list. maybe it is the login issue.
-                error_message = e.getMessage() + " current page:" + current_page;
-                errorTrigger();
-            }
-        } else {
-            //downstream done
-            downstreamDoneTrigger();
-        }
-    }
-
-
-    /**
-     * Unsuccessful HTTP response due to network failure, non-2XX status code, or unexpected
-     * exception.
-     *
-     * @param error the error output
-     */
-    @Override
-    public void failure(RetrofitError error) {
-        error_message = "request error:" + error.getMessage() + " current page:" + current_page;
-        errorTrigger();
-    }
-
 
     /**
      * start to initiate a down stream request to the server side
@@ -103,8 +66,28 @@ public class WishlistSync implements Callback<ResponseProductList> {
         current_page = 1;
         worker_status = STATUS_DOWN_STREAM;
         this.client = client.createProducts();
+        message_channel = result;
+        server_list.clear();
+        syncDown();
+    }
+
+
+    public void syncUp() {
+        worker_status = STATUS_UP_STREAM;
+        construct_removal_list();
+        final List<rProduct> product_f = getWishListAll();
+        final Iterator<rProduct> iterator = product_f.iterator();
+        final Iterator<Long> removal_iter = remove_list.iterator();
+        if (iterator.hasNext() || removal_iter.hasNext()) {
+            continueAddItem(iterator.next().getProduct_id(), iterator, removal_iter);
+        } else {
+            upstreamDoneTrigger();
+        }
+    }
+
+    private void syncDown() {
         try {
-            this.client.wishlist(current_page, this);
+            this.client.wishlist(current_page, new DownSyncCallBack());
         } catch (ApiException e) {
             //there is an error to get the list. maybe it is the login issue.
             error_message = e.getMessage() + " current page:" + current_page;
@@ -112,17 +95,7 @@ public class WishlistSync implements Callback<ResponseProductList> {
         }
     }
 
-    public void syncUp() {
-        worker_status = STATUS_UP_STREAM;
-        final List<rProduct> product_f = getWishListAll();
-        final Iterator<rProduct> iterator = product_f.iterator();
-        if (iterator.hasNext()) {
-            continueAddItem(iterator);
-        } else {
-            upstreamDoneTrigger();
-        }
-    }
-
+    @WishlistSyncStatus
     public int getStatus() {
         return worker_status;
     }
@@ -131,13 +104,15 @@ public class WishlistSync implements Callback<ResponseProductList> {
      * locally add to the wish list
      *
      * @param copyproduct the client interface
+     * @return bool result of the wishlist being added.
      */
-    public void addToWishList(Product copyproduct) {
+    public boolean addToWishList(Product copyproduct) {
         Realm realm = Realm.getInstance(context);
-        if (check_saved_wishlist(realm, copyproduct.product_id)) return;
+        if (check_saved_wishlist(realm, copyproduct.product_id)) return false;
         realm.beginTransaction();
         createAndConvertFromProduct(realm, copyproduct);
         realm.commitTransaction();
+        return true;
     }
 
     private rProduct createAndConvertFromProduct(final Realm r, final Product copyproduct) {
@@ -207,38 +182,124 @@ public class WishlistSync implements Callback<ResponseProductList> {
         if (message_channel != null) message_channel.failure(error_message);
     }
 
-    private void downstreamDoneTrigger() {
+    private ArrayList<Long> remove_list = new ArrayList<>();
+
+    private ArrayList<Long> construct_removal_list() {
+        remove_list.clear();
         Iterator<wish> i = server_list.iterator();
         while (i.hasNext()) {
             wish p = (wish) i.next();
             if (!check_saved_wishlist(p.wish_item.product_id)) {
-                addToWishList(p.wish_item);
+                remove_list.add(p.wish_item.product_id);
             }
         }
+        return remove_list;
+    }
+
+    public class processAddToWishList extends AdvancedAsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            Iterator<wish> i = server_list.iterator();
+            while (i.hasNext()) {
+                wish p = (wish) i.next();
+                if (!check_saved_wishlist(p.wish_item.product_id)) {
+                    addToWishList(p.wish_item);
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void s) {
+            super.onPostExecute(s);
+            downstreamDoneTrigger();
+        }
+
+    }
+
+    private void downstreamDoneTrigger() {
         worker_status = STATUS_IDEAL;
         if (message_channel != null) message_channel.successDownStream(server_list);
     }
 
     private void upstreamDoneTrigger() {
         worker_status = STATUS_IDEAL;
-        if (message_channel != null) message_channel.successUpStream();
+        if (message_channel != null) message_channel.successUpStream(skipped_upstream_items);
     }
 
-
-    private void continueAddItem(Iterator<rProduct> iterator) {
+    private void continueAddItem(final long product_id, Iterator<rProduct> iterator, Iterator<Long> off) {
         try {
-            client.addItemWishList(iterator.next().getProduct_id(), new upStreamCallback(iterator));
+            client.addItemWishList(product_id, new UpSyncCallBack(iterator, off));
         } catch (ApiException e) {
             error_message = e.getMessage() + " on initiating upstream.";
             errorTrigger();
         }
     }
 
-    private class upStreamCallback implements Callback<String> {
-        private final Iterator<rProduct> iterator;
+    private void continueRemoveItem(final long product_id, Iterator<rProduct> iterator, Iterator<Long> off) {
+        try {
+            client.removeItemWishList(product_id, new UpSyncCallBack(iterator, off));
+        } catch (ApiException e) {
+            error_message = e.getMessage() + " on initiating upstream.";
+            errorTrigger();
+        }
+    }
 
-        upStreamCallback(Iterator<rProduct> item) {
-            iterator = item;
+    private class DownSyncCallBack implements Callback<ResponseProductList> {
+
+        /**
+         * Successful HTTP response.
+         *
+         * @param responseProductList the product list
+         * @param response            the response retrofit
+         */
+        @Override
+        public void success(ResponseProductList responseProductList, Response response) {
+            totalpages = responseProductList.totalpages();
+            if (responseProductList.getWishes().size() < LIMIT) {
+                server_list.addAll(responseProductList.getWishes());
+                new processAddToWishList().execute();
+                return;
+            } else if (current_page < totalpages) {
+                server_list.addAll(server_list.size(), responseProductList.getWishes());
+                ++current_page;
+                try {
+                    client.wishlist(current_page, this);
+                } catch (ApiException e) {
+                    //there is an error to get the list. maybe it is the login issue.
+                    error_message = e.getMessage() + " current page:" + current_page;
+                    errorTrigger();
+                }
+            } else {
+                //downstream done
+                new processAddToWishList().execute();
+            }
+        }
+
+
+        /**
+         * Unsuccessful HTTP response due to network failure, non-2XX status code, or unexpected
+         * exception.
+         *
+         * @param error the error output
+         */
+        @Override
+        public void failure(RetrofitError error) {
+            error_message = "request error:" + error.getMessage() + " current page:" + current_page;
+            errorTrigger();
+        }
+
+    }
+
+
+    private class UpSyncCallBack implements Callback<String> {
+        private final Iterator<rProduct> offline_list;
+        private final Iterator<Long> remove_offline;
+
+        UpSyncCallBack(Iterator<rProduct> item, Iterator<Long> itemoff) {
+            offline_list = item;
+            remove_offline = itemoff;
         }
 
         /**
@@ -249,11 +310,8 @@ public class WishlistSync implements Callback<ResponseProductList> {
          */
         @Override
         public void success(String s, Response response) {
-            if (iterator.hasNext()) {
-                continueAddItem(iterator);
-            } else {
-                upstreamDoneTrigger();
-            }
+            Log.d("upsync", "Added:" + s);
+            nextItem();
         }
 
         /**
@@ -264,8 +322,36 @@ public class WishlistSync implements Callback<ResponseProductList> {
          */
         @Override
         public void failure(RetrofitError error) {
-            skipped_upstream_items++;
-            continueAddItem(iterator);
+            if (offline_list.hasNext()) skipped_upstream_items++;
+            Log.d("upsync", "UpSync:" + error.getMessage());
+            nextItem();
+        }
+
+        private boolean is_found_on_the_server_side(final long offline_product_id) {
+            if (server_list.size() > 0) {
+                Iterator<wish> i = server_list.iterator();
+                while (i.hasNext()) {
+                    wish p = (wish) i.next();
+                    if (p.wish_item.product_id == offline_product_id) {
+                        nextItem();
+                        return true;
+                    }
+                }
+                return false;
+            } else return false;
+        }
+
+        private void nextItem() {
+            if (offline_list.hasNext()) {
+                final long ID = offline_list.next().getProduct_id();
+                if (!is_found_on_the_server_side(ID))
+                    continueAddItem(ID, offline_list, remove_offline);
+            } else if (remove_offline.hasNext()) {
+                final long ID = remove_offline.next();
+                continueRemoveItem(ID, offline_list, remove_offline);
+            } else {
+                upstreamDoneTrigger();
+            }
         }
     }
 
@@ -276,7 +362,7 @@ public class WishlistSync implements Callback<ResponseProductList> {
     public interface syncResult {
         void successDownStream(final List<wish> wistlist);
 
-        void successUpStream();
+        void successUpStream(final int skipped_items_on_hold);
 
         void failure(String error_message_out);
     }

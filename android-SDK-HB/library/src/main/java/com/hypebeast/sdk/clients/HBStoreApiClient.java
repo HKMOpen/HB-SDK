@@ -2,17 +2,21 @@ package com.hypebeast.sdk.clients;
 
 import android.content.Context;
 import android.os.Build;
+import android.support.annotation.Nullable;
+import android.support.annotation.WorkerThread;
 import android.util.Log;
 
 import com.google.gson.GsonBuilder;
 import com.hypebeast.sdk.Constants;
 import com.hypebeast.sdk.Util.Connectivity;
 import com.hypebeast.sdk.Util.CookieHanger;
+import com.hypebeast.sdk.api.exception.ApiException;
 import com.hypebeast.sdk.api.gson.GsonFactory;
 import com.hypebeast.sdk.api.gson.MissingCharacterConversion;
 import com.hypebeast.sdk.api.gson.RealmExclusion;
 import com.hypebeast.sdk.api.gson.StringConverter;
 import com.hypebeast.sdk.api.gson.WordpressConversion;
+import com.hypebeast.sdk.api.model.hypebeaststore.ReponseNormal;
 import com.hypebeast.sdk.api.model.hypebeaststore.ResponseMobileOverhead;
 import com.hypebeast.sdk.api.model.symfony.Product;
 import com.hypebeast.sdk.api.model.symfony.wish;
@@ -25,16 +29,22 @@ import com.hypebeast.sdk.api.resources.hbstore.SingleProduct;
 import com.hypebeast.sdk.application.hbx.ConfigurationSync;
 import com.hypebeast.sdk.application.hbx.WishlistSync;
 
+import net.sjava.advancedasynctask.AdvancedAsyncTask;
+
+import java.util.Iterator;
 import java.util.List;
 
+import retrofit.Callback;
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 import retrofit.converter.GsonConverter;
 
 /**
  * Created by hesk on 30/6/15.
  */
-public class HBStoreApiClient extends Client implements WishlistSync.syncResult {
+public class HBStoreApiClient extends Client {
     /**
      * Base URL for all Disqus endpoints
      */
@@ -53,6 +63,7 @@ public class HBStoreApiClient extends Client implements WishlistSync.syncResult 
     private static HBStoreApiClient static_instance;
     private ConfigurationSync data;
     private WishlistSync mWishlist;
+    protected WishlistSync.syncResult sync_result_wishlist;
 
     @Deprecated
     public static HBStoreApiClient newInstance() {
@@ -265,11 +276,27 @@ public class HBStoreApiClient extends Client implements WishlistSync.syncResult 
         return Integer.parseInt(number);
     }
 
+    @Deprecated
     public void addToWishList(Context basethread, Product copyproduct) {
         this.mWishlist.addToWishList(copyproduct);
     }
 
+    /**
+     * adding this product to the local wishlist
+     *
+     * @param copyproduct the product item
+     * @return added or skipped
+     */
+    public boolean addToWishList(Product copyproduct) {
+        return this.mWishlist.addToWishList(copyproduct);
+    }
+
+    @Deprecated
     public void flushWishList(Context basethread) {
+        mWishlist.flushWishList();
+    }
+
+    public void flushWishList() {
         mWishlist.flushWishList();
     }
 
@@ -296,51 +323,86 @@ public class HBStoreApiClient extends Client implements WishlistSync.syncResult 
         }
     }
 
+    /**
+     * bind with the Configuration instance for login and logout functions
+     *
+     * @param instance the instance
+     * @return continue
+     */
     public HBStoreApiClient hookSyncTasker(ConfigurationSync instance) {
         data = instance;
         data.load_dictionary_auto();
         return this;
     }
 
-    protected WishlistSync.syncResult sync_result_wishlist;
-
-    public HBStoreApiClient setInterceptWishListProcess(WishlistSync.syncResult sync) {
+    public HBStoreApiClient setInterceptWishListProcess(final @Nullable WishlistSync.syncResult sync) {
         sync_result_wishlist = sync;
         return this;
     }
 
+    /**
+     * start downloading the wish list
+     */
     public void requestWishList() {
-        if (isCurrentLogin()) {
-            if (sync_result_wishlist == null) {
-                mWishlist.syncInit(this, this);
-            } else {
-                mWishlist.syncInit(this, sync_result_wishlist);
-            }
+        if (isCurrentLogin() && mWishlist.getStatus() == WishlistSync.STATUS_IDEAL) {
+            mWishlist.syncInit(this, sync_result_wishlist);
         }
     }
 
+    /**
+     * uploading the wish list items
+     */
     public void requestUpSyncWishList() {
-        if (isCurrentLogin()) {
+        if (isCurrentLogin() && mWishlist.getStatus() == WishlistSync.STATUS_IDEAL) {
             mWishlist.syncUp();
         }
     }
 
-    @Override
-    public void successDownStream(List<wish> wistlist) {
-
+    @WishlistSync.WishlistSyncStatus
+    public int wishListWorkerStatus() {
+        return mWishlist.getStatus();
     }
 
-    @Override
-    public void successUpStream() {
+    /**
+     * this is working for the testing purposes
+     *
+     * @param URL              the URI in string
+     * @param trigger_complete the action with it is completed to store the items to the wishlist locally
+     */
+    public void store_all_items_to_wishlist_from_uri(final String URL, final store_all_items_mock trigger_complete) {
+        try {
+            generalProducts(URL).general(new Callback<ReponseNormal>() {
+                @Override
+                public void success(ReponseNormal reponseNormal, Response response) {
+                    int processed = 0;
+                    Iterator<Product> c = reponseNormal.product_list.getlist().iterator();
+                    while (c.hasNext()) {
+                        Product h = (Product) c.next();
+                        boolean j = addToWishList(h);
+                        if (j) processed++;
+                    }
 
+                    trigger_complete.success(reponseNormal.product_list.getlist(), processed, URL);
+                }
+
+                @Override
+                public void failure(RetrofitError error) {
+                    trigger_complete.falilure("Failure on request: " + error.getMessage());
+                }
+            });
+        } catch (ApiException e) {
+            trigger_complete.falilure("fail to add" + e.getMessage());
+        }
     }
 
-    @Override
-    public void failure(String error_message_out) {
+    /**
+     * works for the mock object test
+     */
+    public interface store_all_items_mock {
+        void success(List<Product> list, int total_items_processed, String URL);
 
+        void falilure(String failed_message);
     }
 
-/*
-    optimizelyEndUserId=oeu1427704786547r0.16302457707934082; PHPSYLIUSID=hotrhic7v0renb44306oc60dl7; wordpress_logged_in_48e9f22ffa424b200d04b29b8dcb2a90=ooxhesk%40yahoo.com.hk%7C1460701032%7C97c1e6d85a010990a1cfcfc42c1b8c6d; __gads=ID=80b6bbb1c91b0d2e:T=1431330005:S=ALNI_MaTg8WA4ot-TFrR9dcH1kz2o1cxTw; optimizelySegments=%7B%222652000965%22%3A%22false%22%2C%222671940073%22%3A%22gc%22%2C%222673440032%22%3A%22false%22%2C%222682660012%22%3A%22referral%22%2C%222685030137%22%3A%22campaign%22%2C%222686260265%22%3A%22gc%22%7D; optimizelyBuckets=%7B%7D; __qca=P0-479511623-1431489547842; geo_redirect_off=yes; wooTracker=CbeRWN9ZlwnU; wooTracker=CbeRWN9ZlwnU; _chartbeat2=CORluQBqZeUOKr5xy.1427704788401.1437459868424.0000000000000011; _ga=GA1.2.434876542.1427704787; gsScrollPos=; hbx_catalog_country=HK; __zlcmid=U0eXYMtAwZnotG; _store_item_count=1*/
 
 }

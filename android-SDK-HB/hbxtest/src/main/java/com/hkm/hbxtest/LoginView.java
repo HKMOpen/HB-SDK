@@ -24,7 +24,7 @@ public class LoginView extends BasicWebViewNormal implements WishlistSync.syncRe
         return R.layout.login_screen;
     }
 
-    Button logout_b, wish_list_b;
+    Button logout_b, wish_list_b, store_products, upsync;
     TextView console;
 
     @Override
@@ -32,7 +32,14 @@ public class LoginView extends BasicWebViewNormal implements WishlistSync.syncRe
         betterCircleBar = (CircleProgressBar) v.findViewById(com.hkm.ezwebview.R.id.wv_simple_process);
         logout_b = (Button) v.findViewById(R.id.logoutbutton);
         wish_list_b = (Button) v.findViewById(R.id.getwishlist);
+        store_products = (Button) v.findViewById(R.id.store_products_w);
+        upsync = (Button) v.findViewById(R.id.up_sync);
         console = (TextView) v.findViewById(R.id.console);
+
+        completeloading();
+    }
+
+    private void runbind() {
         logout_b.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -45,15 +52,80 @@ public class LoginView extends BasicWebViewNormal implements WishlistSync.syncRe
         wish_list_b.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                HBStoreApiClient
-                        .getInstance(getActivity())
-                        .setInterceptWishListProcess(LoginView.this)
-                        .requestWishList();
+                ViewCompat.animate(betterCircleBar).alpha(1f).withEndAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        HBStoreApiClient
+                                .getInstance(getActivity())
+                                .setInterceptWishListProcess(LoginView.this)
+                                .requestWishList();
 
-                ViewCompat.animate(betterCircleBar).alpha(1f);
+                    }
+                });
             }
         });
 
+        store_products.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ViewCompat.animate(betterCircleBar).alpha(1f).withEndAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        HBStoreApiClient
+                                .getInstance(getActivity())
+                                .store_all_items_to_wishlist_from_uri(
+                                        "http://store.hypebeast.com/categories/accessories/bags",
+                                        new HBStoreApiClient.store_all_items_mock() {
+                                            @Override
+                                            public void success(List<Product> list, int total_items_processed, String URL) {
+                                                String mms = "the stream of products has been downloaded." + URL + ". processed total items of " + total_items_processed + " added to the wish list. Retrieved items: " + list.size();
+                                                common_process_done("SUCCESS:" + mms, false);
+                                            }
+
+                                            @Override
+                                            public void falilure(String failed_message) {
+                                                String mms = "error: " + failed_message;
+                                                common_process_done(mms, false);
+                                            }
+                                        });
+
+                    }
+                });
+            }
+        });
+
+        upsync.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ViewCompat.animate(betterCircleBar).alpha(1f).withEndAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        HBStoreApiClient
+                                .getInstance(getActivity())
+                                .setInterceptWishListProcess(LoginView.this)
+                                .requestUpSyncWishList();
+
+                    }
+                });
+            }
+        });
+    }
+
+
+    private void common_process_done(final String message, final boolean withDialog) {
+        if (withDialog) ErrorMessage.alert(message, getFragmentManager());
+        addMessage(message);
+        completeloading();
+    }
+
+    @Override
+    protected void completeloading() {
+        ViewCompat.animate(betterCircleBar).alpha(0f).withEndAction(new Runnable() {
+            @Override
+            public void run() {
+                runbind();
+            }
+        });
     }
 
     private void addMessage(final String mMessage) {
@@ -63,17 +135,13 @@ public class LoginView extends BasicWebViewNormal implements WishlistSync.syncRe
     @Override
     public void successDownStream(List<wish> wistlist) {
         String message = "down done! and there is " + wistlist.size() + " items found";
-        ErrorMessage.alert(message, getFragmentManager());
-        addMessage(message);
-        completeloading();
+        common_process_done(message, false);
     }
 
     @Override
-    public void successUpStream() {
-        String message = "up done! and there is";
-        ErrorMessage.alert(message, getFragmentManager());
-        addMessage(message);
-        completeloading();
+    public void successUpStream(final int skipped) {
+        String message = "up done! and there is " + skipped + " items on hold";
+        common_process_done(message, false);
     }
 
     @Override
@@ -81,4 +149,6 @@ public class LoginView extends BasicWebViewNormal implements WishlistSync.syncRe
         ErrorMessage.alert(error_message_out, getFragmentManager());
         completeloading();
     }
+
+
 }

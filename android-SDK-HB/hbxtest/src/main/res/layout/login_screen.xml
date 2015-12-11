@@ -21,11 +21,25 @@
             android:layout_height="wrap_content"
             android:text="Wish List Get!" />
 
+        <Button
+            android:id="@+id/store_products_w"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Add batch items to the wishlist!" />
+
+        <Button
+            android:id="@+id/up_sync"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="up sync!" />
+
         <TextView
             android:id="@+id/console"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_margin="10dp"
+            android:background="@drawable/input"
+            android:padding="5dp"
             android:singleLine="false" />
     </LinearLayout>
 

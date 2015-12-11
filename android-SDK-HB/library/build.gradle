@@ -39,6 +39,7 @@ dependencies {
     compile 'io.realm:realm-android:0.86.0'
     compile 'org.ocpsoft.prettytime:prettytime:3.2.7.Final'
     compile 'com.greysonparrelli.permiso:permiso:0.1.1'
+    compile 'net.sjava:advancedasynctask:1.0.1'
     // Unit testing dependencies
     // testCompile 'junit:junit:4.12'
     // Set this dependency if you want to use Mockito

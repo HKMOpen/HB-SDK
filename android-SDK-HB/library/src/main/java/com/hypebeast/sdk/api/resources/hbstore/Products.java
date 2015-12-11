@@ -178,14 +178,26 @@ public interface Products {
     /**
      * login account with adding new product id into the list
      *
-     * @param result
-     * @throws ApiException
+     * @param product_id_to_add the long ID
+     * @param result            the string result
+     * @throws ApiException n
      */
     @GET("/account/wishlist/add/{product_id}")
     void addItemWishList(
             final @Path("product_id") long product_id_to_add,
             final Callback<String> result) throws ApiException;
 
+    /**
+     * after login the user can called to remove the item from the wish list
+     *
+     * @param product_id_to_remove the product id
+     * @param result               the string in result
+     * @throws ApiException n
+     */
+    @GET("/account/wishlist/remove/{product_id}")
+    void removeItemWishList(
+            final @Path("product_id") long product_id_to_remove,
+            final Callback<String> result) throws ApiException;
 
     @GET("/")
     void general(
