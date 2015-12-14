@@ -7,15 +7,15 @@ import com.google.gson.annotations.SerializedName;
  */
 public class underscorelinks {
     @SerializedName("self")
-    private Links self;
+    public Links self;
     @SerializedName("first")
-    private Links first;
+    public Links first;
     @SerializedName("last")
-    private Links last;
+    public Links last;
     @SerializedName("next")
-    private Links next;
+    public Links next;
     @SerializedName("previous")
-    private Links previous;
+    public Links previous;
 
     public underscorelinks() {
     }

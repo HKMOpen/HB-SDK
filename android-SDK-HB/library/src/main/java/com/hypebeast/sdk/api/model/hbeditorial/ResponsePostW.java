@@ -9,19 +9,22 @@ import java.util.ArrayList;
  */
 public class ResponsePostW {
     @SerializedName("posts")
-    public PostsObject post;
+    public PostsObject postList;
+
     public int page_limit = 0;
     private ArrayList<ArticleData> list;
 
     public ResponsePostW() {
-        if (post != null) {
-            page_limit = post.limit;
-            list = post._embedded.getItems();
+        if (postList != null) {
+            page_limit = postList.limit;
+            list = postList._embedded.getItems();
         }
     }
 
     public ArrayList<ArticleData> getListFeed() {
         return list;
     }
+
+
 
 }

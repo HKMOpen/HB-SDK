@@ -4,6 +4,8 @@ import com.hypebeast.sdk.api.exception.ApiException;
 import com.hypebeast.sdk.api.model.hbeditorial.Foundation;
 import com.hypebeast.sdk.api.model.hbeditorial.ResponsePostFromSearch;
 import com.hypebeast.sdk.api.model.hbeditorial.ResponsePostW;
+import com.hypebeast.sdk.api.model.hbeditorial.ResponseSingle;
+import com.hypebeast.sdk.api.model.hypebeaststore.ResponseSingleProduct;
 import com.squareup.okhttp.Response;
 
 import retrofit.Callback;
@@ -16,19 +18,6 @@ import retrofit.http.Query;
  */
 public interface feedhost {
 
-
-    /**
-     * only used on installation override
-     *
-     * @param pid post ID
-     * @param cb  call back object
-     * @throws ApiException the exceptions
-     */
-    @GET("/wp-json/posts/{pid}")
-    void the_post(
-            final @Path("pid") long pid,
-            final Callback<ResponsePostW> cb
-    ) throws ApiException;
 
     @GET("/page/{page_no}")
     void the_recent_page(
@@ -61,15 +50,53 @@ public interface feedhost {
             final Callback<Foundation> cb
     ) throws ApiException;
 
+    /**
+     * adding additional page number to call the pagination API
+     *
+     * @param pagepage_number_no the index of the page number
+     * @param cb                 the call back only
+     * @throws ApiException n
+     */
     @GET("/page/{page_no}")
-    void full_path_list(
+    void atPage(
             final @Path("page_no") int pagepage_number_no,
             final Callback<ResponsePostW> cb
     ) throws ApiException;
 
+    /**
+     * only used on installation override
+     *
+     * @param pid post ID
+     * @param cb  call back object
+     * @throws ApiException the exceptions
+     */
+    @GET("/wp-json/posts/{pid}")
+    void the_post(
+            final @Path("pid") long pid,
+            final Callback<ResponseSingle> cb
+    ) throws ApiException;
+
+
+    /**
+     * retrieve a list of post articles with the data continue from the full path calls
+     *
+     * @param cb the call back only
+     * @throws ApiException n
+     */
     @GET("/")
-    void full_path_list(
+    void getList(
             final Callback<ResponsePostW> cb
+    ) throws ApiException;
+
+    /**
+     * retrieve a single article with the full path url
+     *
+     * @param cb the call back only
+     * @throws ApiException n
+     */
+    @GET("/")
+    void getSingleArticle(
+            final Callback<ResponseSingle> cb
     ) throws ApiException;
 
 }

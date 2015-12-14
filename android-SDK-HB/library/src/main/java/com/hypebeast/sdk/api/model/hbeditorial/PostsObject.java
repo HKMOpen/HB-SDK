@@ -12,6 +12,19 @@ public class PostsObject {
     public PostsObject() {
     }
 
+
+    @SerializedName("title")
+    public String single_article_title;
+    @SerializedName("content")
+    public String single_article_content;
+    @SerializedName("slug")
+    public String single_article_slug;
+    @SerializedName("date")
+    public String single_article_date;
+
+
+
+
     @SerializedName("page")
     public int page;
     @SerializedName("limit")

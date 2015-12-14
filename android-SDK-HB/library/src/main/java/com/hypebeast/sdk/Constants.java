@@ -4,7 +4,7 @@ package com.hypebeast.sdk;
  * Created by hesk on 21/5/15.
  */
 public class Constants {
-    public static final int version = 64;
+    public static final int version = 66;
     /**
      * Authorize URL
      */
