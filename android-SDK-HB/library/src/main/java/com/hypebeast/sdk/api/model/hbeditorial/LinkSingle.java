@@ -3,21 +3,24 @@ package com.hypebeast.sdk.api.model.hbeditorial;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by hesk on 21/4/15.
  */
-public class Links {
+public class LinkSingle {
     @SerializedName("self")
     public href self;
     @SerializedName("thumbnail")
     public href thumbnail;
+    @SerializedName("shorthen_url")
+    public href short_url;
     @SerializedName("categories")
-    public ArrayList<href> categories;
+    public List<href> categories;
     @SerializedName("tags")
-    public ArrayList<href> tags;
+    public List<href> tags;
 
-    public Links() {
+    public LinkSingle() {
     }
 
     public String getSelf() {
@@ -28,11 +31,11 @@ public class Links {
         return thumbnail.getHref();
     }
 
-    public ArrayList<href> getCategories() {
+    public List<href> getCategories() {
         return categories;
     }
 
-    public ArrayList<href> getTags() {
+    public List<href> getTags() {
         return tags;
     }
 }

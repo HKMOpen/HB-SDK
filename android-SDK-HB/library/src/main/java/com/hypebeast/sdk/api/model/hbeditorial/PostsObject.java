@@ -9,21 +9,6 @@ import java.util.ArrayList;
  */
 public class PostsObject {
 
-    public PostsObject() {
-    }
-
-
-    @SerializedName("title")
-    public String single_article_title;
-    @SerializedName("content")
-    public String single_article_content;
-    @SerializedName("slug")
-    public String single_article_slug;
-    @SerializedName("date")
-    public String single_article_date;
-
-
-
 
     @SerializedName("page")
     public int page;
@@ -34,10 +19,12 @@ public class PostsObject {
     @SerializedName("total")
     public int total;
     @SerializedName("_links")
-    public underscorelinks _links;
+    public LinkPages _links;
     @SerializedName("_embedded")
-    public underscoreembedded _embedded;
+    public EmbedPayload _embedded;
 
+    public PostsObject() {
+    }
 
     public ArrayList<ArticleData> getArticles() {
         return _embedded.getItems();

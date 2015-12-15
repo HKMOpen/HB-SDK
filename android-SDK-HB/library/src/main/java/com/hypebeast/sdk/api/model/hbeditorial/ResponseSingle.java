@@ -7,5 +7,5 @@ import com.google.gson.annotations.SerializedName;
  */
 public class ResponseSingle {
     @SerializedName("post")
-    public PostsObject post;
+    public SingleArticle post;
 }

@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
+ * The article data in list
  * Created by hesk on 21/4/15.
  */
 public class ArticleData {
@@ -22,9 +23,11 @@ public class ArticleData {
     @SerializedName("slug")
     public String slug;
     @SerializedName("_links")
-    public Links _links;
+    public LinkSingle _links;
     @SerializedName("commentCount")
     private int commentCount = -1;
+    @SerializedName("_embedded")
+    public EmbedPayload _embedded;
 
     public ArticleData() {
     }
@@ -45,7 +48,7 @@ public class ArticleData {
         return slug;
     }
 
-    public Links get_links() {
+    public LinkSingle get_links() {
         return _links;
     }
 

@@ -7,7 +7,7 @@ import java.util.ArrayList;
 /**
  * Created by hesk on 22/4/15.
  */
-public class underscoreembedded {
+public class EmbedPayload {
     @SerializedName("items")
     public ArrayList<ArticleData> items;
     @SerializedName("disqus_identifier")
@@ -19,7 +19,7 @@ public class underscoreembedded {
     @SerializedName("attachments")
     public ArrayList<Attachment> attachments;
 
-    public underscoreembedded() {
+    public EmbedPayload() {
     }
 
 

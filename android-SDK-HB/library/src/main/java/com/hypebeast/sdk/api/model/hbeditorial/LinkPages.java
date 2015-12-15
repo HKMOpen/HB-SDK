@@ -5,18 +5,18 @@ import com.google.gson.annotations.SerializedName;
 /**
  * Created by hesk on 22/4/15.
  */
-public class underscorelinks {
+public class LinkPages {
     @SerializedName("self")
-    public Links self;
+    public href self;
     @SerializedName("first")
-    public Links first;
+    public href first;
     @SerializedName("last")
-    public Links last;
+    public href last;
     @SerializedName("next")
-    public Links next;
+    public href next;
     @SerializedName("previous")
-    public Links previous;
+    public href previous;
 
-    public underscorelinks() {
+    public LinkPages() {
     }
 }
