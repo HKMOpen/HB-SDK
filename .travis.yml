@@ -13,8 +13,8 @@ env:
     # General Android settings used in builds
     - ANDROID_TARGET=android-23
     - ANDROID_API_LEVEL=23
-    - EMULATOR_API_LEVEL=21
-    - ANDROID_BUILD_TOOLS_VERSION=23.0.0
+    - EMULATOR_API_LEVEL=22
+    - ANDROID_BUILD_TOOLS_VERSION=23.0.2
     - ANDROID_ABI=armeabi-v7a
     - ADB_INSTALL_TIMEOUT=20 
 
