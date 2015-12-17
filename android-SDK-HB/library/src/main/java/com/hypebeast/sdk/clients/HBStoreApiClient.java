@@ -17,6 +17,7 @@ import com.hypebeast.sdk.api.gson.RealmExclusion;
 import com.hypebeast.sdk.api.gson.StringConverter;
 import com.hypebeast.sdk.api.gson.WordpressConversion;
 import com.hypebeast.sdk.api.model.hypebeaststore.ReponseNormal;
+import com.hypebeast.sdk.api.model.hypebeaststore.ResponseBrandList;
 import com.hypebeast.sdk.api.model.hypebeaststore.ResponseMobileOverhead;
 import com.hypebeast.sdk.api.model.symfony.Product;
 import com.hypebeast.sdk.api.model.symfony.wish;
@@ -199,12 +200,22 @@ public class HBStoreApiClient extends Client {
         return mAdapter.create(SingleProduct.class);
     }
 
-    public String fromJsonToString(ResponseMobileOverhead mFoundation) {
+    public String fromJsonToString(Object save_json_object) {
+        if (save_json_object instanceof ResponseMobileOverhead) {
+            return gsonsetup.toJson((ResponseMobileOverhead) save_json_object);
+        }
+        if (save_json_object instanceof ResponseBrandList) {
+            return gsonsetup.toJson((ResponseBrandList) save_json_object);
+        }
         return "";
     }
 
-    public ResponseMobileOverhead fromsavedConfiguration(String mFoundation_string) {
-        return gsonsetup.fromJson(mFoundation_string, ResponseMobileOverhead.class);
+    public ResponseMobileOverhead converttoConfig(String raw) {
+        return gsonsetup.fromJson(raw, ResponseMobileOverhead.class);
+    }
+
+    public ResponseBrandList converttoBrandList(String raw) {
+        return gsonsetup.fromJson(raw, ResponseBrandList.class);
     }
 
     private CookieHanger getCookieClient() {
@@ -226,9 +237,9 @@ public class HBStoreApiClient extends Client {
                 try {
                     if (Connectivity.isConnected(context)) {
                         request.addHeader("Cache-Control", "public, max-age=" + timeByMins(1));
-                    } else {
-                        request.addHeader("Cache-Control", "public, only-if-cached, max-stale=" + timeByWeeks(1));
-                    }
+                    } //else {
+                    //  request.addHeader("Cache-Control", "public, only-if-cached, max-stale=" + timeByWeeks(1));
+                    // }
                 } catch (Exception e) {
 
                 }
@@ -393,6 +404,23 @@ public class HBStoreApiClient extends Client {
         } catch (ApiException e) {
             trigger_complete.falilure("fail to add" + e.getMessage());
         }
+    }
+
+    public boolean hasFoundationStored() {
+        return data.getFoundation() != null;
+    }
+
+    public boolean hasBrandListStored() {
+        return data.getBrandList() != null;
+    }
+
+
+    public ResponseBrandList getStoredDataBrandList() {
+        return data.getBrandList();
+    }
+
+    public ResponseMobileOverhead getStoredDataFoundation() {
+        return data.getFoundation();
     }
 
     /**

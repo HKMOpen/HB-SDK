@@ -7,17 +7,15 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.hypebeast.sdk.Constants;
-import com.hypebeast.sdk.Util.CookieHanger;
 import com.hypebeast.sdk.api.exception.ApiException;
 import com.hypebeast.sdk.api.model.hypebeaststore.ResLoginCheck;
 import com.hypebeast.sdk.api.model.hypebeaststore.ResLoginPassword;
+import com.hypebeast.sdk.api.model.hypebeaststore.ResponseBrandList;
 import com.hypebeast.sdk.api.model.hypebeaststore.ResponseMobileOverhead;
-import com.hypebeast.sdk.api.model.symfony.Config;
 import com.hypebeast.sdk.api.resources.hbstore.Authentication;
-import com.hypebeast.sdk.api.resources.hbstore.Brand;
 import com.hypebeast.sdk.api.resources.hbstore.Overhead;
-import com.hypebeast.sdk.api.resources.hbstore.Products;
 import com.hypebeast.sdk.application.ApplicationBase;
+import com.hypebeast.sdk.application.hypebeast.syncDebug;
 import com.hypebeast.sdk.clients.HBStoreApiClient;
 
 import java.sql.Timestamp;
@@ -36,6 +34,7 @@ public class ConfigurationSync extends ApplicationBase {
     public static ConfigurationSync instance;
     private Realm realm;
     public static final String PREFERENCE_FOUNDATION = "foundationfile";
+    public static final String PREFERENCE_BRAND_LIST = "brand_list";
     public static final String ACCOUNT_USER_ID = "hbx_user_uid";
     public static final String ACCOUNT_SIG = "hbx_PHPSYLIUSID";
     public static final String ACCOUNT_USER = "hbx_username";
@@ -44,6 +43,7 @@ public class ConfigurationSync extends ApplicationBase {
     private String error_messages;
     private Overhead mOverheadRequest;
     private ResponseMobileOverhead mFoundation;
+    private ResponseBrandList brandList;
     private HBStoreApiClient client;
 
     private ArrayList<sync> mListeners = new ArrayList<>();
@@ -82,6 +82,7 @@ public class ConfigurationSync extends ApplicationBase {
     @Override
     protected void removeAllData() {
         saveInfo(PREFERENCE_FOUNDATION, "");
+        saveInfo(PREFERENCE_BRAND_LIST, "");
         saveInfo(PREFERENCE_FOUNDATION_REGISTRATION, "");
         saveInfo(ACCOUNT_USER_ID, "");
         saveInfo(ACCOUNT_SIG, "");
@@ -114,7 +115,13 @@ public class ConfigurationSync extends ApplicationBase {
      * completed the actions from the login process
      */
     private void executeListeners() {
-        if (mListener != null) mListener.syncDone(instance, mFoundation);
+        if (mFoundation == null) return;
+        if (brandList == null) return;
+        if (mListener != null) {
+            if (mListener instanceof sync) {
+                mListener.syncDone(instance, mFoundation);
+            }
+        }
     }
 
     private boolean isLogin = false;
@@ -218,17 +225,45 @@ public class ConfigurationSync extends ApplicationBase {
     }
 
     private void syncWorkerThread() {
+        syncBrandList();
+        syncAppBaseInfo();
+        syncCheckLogined();
+    }
+
+    private void registerTimeBaseInfo() {
+        Date date = new Date();
+        Timestamp timestamp = new Timestamp(date.getTime());
+        saveInfo(PREFERENCE_FOUNDATION_REGISTRATION, timestamp.toString());
+    }
+
+    private void syncAppBaseInfo() {
         try {
             mOverheadRequest.mobile_config(new Callback<ResponseMobileOverhead>() {
                 @Override
                 public void success(ResponseMobileOverhead foundation, Response response) {
                     mFoundation = foundation;
                     saveInfo(PREFERENCE_FOUNDATION, client.fromJsonToString(foundation));
-                    Date date = new Date();
-                    Timestamp timestamp = new Timestamp(date.getTime());
-                    saveInfo(PREFERENCE_FOUNDATION_REGISTRATION, timestamp.toString());
-                    //the second task is now started - check login status
-                    syncCheckLogined();
+                    registerTimeBaseInfo();
+                }
+
+                @Override
+                public void failure(RetrofitError error) {
+                    triggerFatalError(error.getMessage());
+                }
+            });
+        } catch (ApiException e) {
+            triggerFatalError(e.getMessage());
+        }
+    }
+
+    private void syncBrandList() {
+        try {
+            client.createBrand().getAll(new Callback<ResponseBrandList>() {
+                @Override
+                public void success(ResponseBrandList responseBrandList, Response response) {
+                    brandList = responseBrandList;
+                    saveInfo(PREFERENCE_BRAND_LIST, client.fromJsonToString(responseBrandList));
+                    executeListeners();
                 }
 
                 @Override
@@ -247,8 +282,9 @@ public class ConfigurationSync extends ApplicationBase {
 
     private void init() {
         String data = loadRef(PREFERENCE_FOUNDATION);
+        String data_brand = loadRef(PREFERENCE_BRAND_LIST);
         String time = loadRef(PREFERENCE_FOUNDATION_REGISTRATION);
-        if (!data.equalsIgnoreCase("none") && !time.equalsIgnoreCase("none")) {
+        if (!data.equalsIgnoreCase(EMPTY_FIELD) && !time.equalsIgnoreCase(EMPTY_FIELD)) {
             Timestamp past = Timestamp.valueOf(time);
             Date date = new Date();
             //   Calendar cal1 = Calendar.getInstance();
@@ -258,19 +294,24 @@ public class ConfigurationSync extends ApplicationBase {
             if (nowms - pastms > Constants.ONE_DAY) {
                 syncWorkerThread();
             } else {
-                if (data.equalsIgnoreCase("")) {
+                if (data.equalsIgnoreCase(EMPTY_FIELD) || data_brand.equalsIgnoreCase(EMPTY_FIELD)) {
                     syncWorkerThread();
                 } else {
-                    mFoundation = client.fromsavedConfiguration(data);
+                    mFoundation = client.converttoConfig(data);
+                    brandList = client.converttoBrandList(data_brand);
                     executeListeners();
                 }
             }
-        } else if (data.equalsIgnoreCase("none") || time.equalsIgnoreCase("none")) {
+        } else if (data.equalsIgnoreCase(EMPTY_FIELD) || time.equalsIgnoreCase(EMPTY_FIELD) || data_brand.equalsIgnoreCase(EMPTY_FIELD)) {
             syncWorkerThread();
         }
     }
 
     public ResponseMobileOverhead getFoundation() {
         return mFoundation;
+    }
+
+    public ResponseBrandList getBrandList() {
+        return brandList;
     }
 }
