@@ -15,7 +15,7 @@ setup
 repositories {maven { url "http://dl.bintray.com/jjhesk/maven" }}
 
 dependencies {
-    compile 'com.hb:sdklibrary:0.3.1'
+    compile 'com.hb:sdklibrary:0.6.6'
 }
 
 ```
