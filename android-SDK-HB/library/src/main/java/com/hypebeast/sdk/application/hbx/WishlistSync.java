@@ -6,6 +6,7 @@ import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.hypebeast.sdk.api.RealmUtil;
 import com.hypebeast.sdk.api.exception.ApiException;
 import com.hypebeast.sdk.api.model.hypebeaststore.ResponseProductList;
 import com.hypebeast.sdk.api.model.symfony.Product;
@@ -21,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import io.realm.Realm;
+import io.realm.RealmConfiguration;
 import io.realm.RealmQuery;
 import io.realm.RealmResults;
 import retrofit.Callback;
@@ -41,6 +43,7 @@ public class WishlistSync {
     private List<wish> server_list = new ArrayList<wish>();
     private Context context;
     private int worker_status;
+    private final RealmConfiguration conf;
     public static final int
             STATUS_IDEAL = 1,
             STATUS_DOWN_STREAM = 2,
@@ -51,9 +54,10 @@ public class WishlistSync {
 
     }
 
-    public WishlistSync(Context _context) {
-        context = _context;
+    public WishlistSync(Context _c) {
+        context = _c;
         worker_status = STATUS_IDEAL;
+        conf = RealmUtil.realmCfg(_c);
     }
 
     /**
@@ -107,7 +111,7 @@ public class WishlistSync {
      * @return bool result of the wishlist being added.
      */
     public boolean addToWishList(Product copyproduct) {
-        Realm realm = Realm.getInstance(context);
+        Realm realm = Realm.getInstance(conf);
         if (check_saved_wishlist(realm, copyproduct.product_id)) return false;
         realm.beginTransaction();
         createAndConvertFromProduct(realm, copyproduct);
@@ -116,20 +120,20 @@ public class WishlistSync {
     }
 
     private rProduct createAndConvertFromProduct(final Realm r, final Product copyproduct) {
-        rProduct _product = r.createObject(rProduct.class);
-        _product.setLinks(copyproduct._links.self.href);
-        _product.setImageHead(copyproduct.images.get(0).data.medium.href);
-        _product.setProduct_id(copyproduct.product_id);
-        _product.setCreated_at(copyproduct.created_at);
-        _product.setDescription(copyproduct.description);
-        _product.setName(copyproduct.name);
-        _product.setPrice(copyproduct.price);
-        _product.setBrandname(copyproduct.get_brand_name());
-        return _product;
+        rProduct _p = r.createObject(rProduct.class);
+        _p.setLinks(copyproduct._links.self.href);
+        _p.setImageHead(copyproduct.images.get(0).data.medium.href);
+        _p.setProduct_id(copyproduct.product_id);
+        _p.setCreated_at(copyproduct.created_at);
+        _p.setDescription(copyproduct.description);
+        _p.setName(copyproduct.name);
+        _p.setPrice(copyproduct.price);
+        _p.setBrandname(copyproduct.get_brand_name());
+        return _p;
     }
 
     public void flushWishList() {
-        Realm realm = Realm.getInstance(context);
+        Realm realm = Realm.getInstance(conf);
         RealmResults<rProduct> copies = realm.where(rProduct.class).findAll();
         realm.beginTransaction();
         copies.clear();
@@ -137,7 +141,7 @@ public class WishlistSync {
     }
 
     public void removeItem(long product_id) {
-        Realm realm = Realm.getInstance(context);
+        Realm realm = Realm.getInstance(conf);
         RealmResults<rProduct> copies = realm.where(rProduct.class).equalTo("product_id", product_id).findAll();
         realm.beginTransaction();
         copies.clear();
@@ -153,7 +157,7 @@ public class WishlistSync {
     }
 
     public List<rProduct> getWishListAll() {
-        Realm realm = Realm.getInstance(context);
+        Realm realm = Realm.getInstance(conf);
         RealmResults<rProduct> copies = realm.where(rProduct.class).findAll();
         return copies;
     }
@@ -174,7 +178,7 @@ public class WishlistSync {
     }
 
     public boolean check_saved_wishlist(long product_id) {
-        Realm realm = Realm.getInstance(context);
+        Realm realm = Realm.getInstance(conf);
         return check_saved_wishlist(realm, product_id);
     }
 

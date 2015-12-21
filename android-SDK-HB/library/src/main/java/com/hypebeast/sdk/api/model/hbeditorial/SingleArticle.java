@@ -7,6 +7,9 @@ import com.google.gson.annotations.SerializedName;
  */
 public class SingleArticle {
 
+    @SerializedName("id")
+    public long article_id;
+
     @SerializedName("title")
     public String single_article_title;
     @SerializedName("content")

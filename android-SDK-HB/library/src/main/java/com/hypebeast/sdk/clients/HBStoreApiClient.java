@@ -141,6 +141,11 @@ public class HBStoreApiClient extends Client {
         return adp.create(Products.class);
     }
 
+    public SingleProduct createEndpointSingle(final String endpoint) {
+        final RestAdapter dp = byURL(endpoint);
+        return dp.create(SingleProduct.class);
+    }
+
     private RestAdapter byURL(final String endpoint) {
         return new RestAdapter.Builder()
                 .setEndpoint(endpoint)

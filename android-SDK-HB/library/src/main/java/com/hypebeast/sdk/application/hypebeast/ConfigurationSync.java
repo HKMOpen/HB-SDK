@@ -31,7 +31,6 @@ import retrofit.client.Response;
  */
 public class ConfigurationSync extends ApplicationBase {
     public static ConfigurationSync instance;
-    private Realm realm;
     public static final String folder_name_local = "hb.editorials";
     public static final String local_css_file_name = "hb_article_content.css";
     public static final String PREFERENCE_FOUNDATION = "foundationfile";
@@ -78,9 +77,7 @@ public class ConfigurationSync extends ApplicationBase {
 
     public ConfigurationSync(Application app, sync mListener) {
         super(app);
-
         isFailure = false;
-        this.realm = Realm.getInstance(app);
         client = HBEditorialClient.newInstance(app);
         clientRequest = client.createFeedInterface();
         addInterface(mListener);
@@ -184,7 +181,8 @@ public class ConfigurationSync extends ApplicationBase {
     }
 
 
-    private void init() {
+    protected void init() {
+        super.init();
         prepareCacheConfiguration();
         String data = loadRef(PREFERENCE_FOUNDATION);
         String time = loadRef(PREFERENCE_FOUNDATION_REGISTRATION);

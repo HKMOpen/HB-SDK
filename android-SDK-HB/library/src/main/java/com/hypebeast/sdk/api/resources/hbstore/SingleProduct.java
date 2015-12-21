@@ -1,6 +1,7 @@
 package com.hypebeast.sdk.api.resources.hbstore;
 
 import com.hypebeast.sdk.api.exception.ApiException;
+import com.hypebeast.sdk.api.model.hypebeaststore.ReponseNormal;
 import com.hypebeast.sdk.api.model.hypebeaststore.ResponseListOrder;
 import com.hypebeast.sdk.api.model.hypebeaststore.ResponseSingleProduct;
 import com.hypebeast.sdk.api.model.symfony.OrderItem;
@@ -18,8 +19,7 @@ import retrofit.http.Query;
  */
 public interface SingleProduct {
 
-    @GET("/{segment_1}/{segment_2}/{segment_3}")
-    void FullPathReq(final @Path("segment_1") String s1, final @Path("segment_2") String s2, final @Path("segment_3") String s3, final Callback<ResponseSingleProduct> result) throws ApiException;
+
 
 
     @GET("/products/{product_identification_no}")
@@ -36,6 +36,12 @@ public interface SingleProduct {
     @GET("/account/wishlist/add/{product_id}")
     void addWish(
             final @Path("product_id") long product_id, final Callback<ResponseSingleProduct> result) throws ApiException;
+
+    @GET("/")
+    void retrieve(
+            final Callback<ResponseSingleProduct> result
+    ) throws ApiException;
+
 
 
 }

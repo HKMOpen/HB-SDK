@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.hypebeast.sdk.Constants;
+import com.hypebeast.sdk.Util.CacheManager;
 import com.hypebeast.sdk.api.exception.ApiException;
 import com.hypebeast.sdk.api.model.hypebeaststore.ResLoginCheck;
 import com.hypebeast.sdk.api.model.hypebeaststore.ResLoginPassword;
@@ -32,7 +33,6 @@ import retrofit.client.Response;
  */
 public class ConfigurationSync extends ApplicationBase {
     public static ConfigurationSync instance;
-    private Realm realm;
     public static final String PREFERENCE_FOUNDATION = "foundationfile";
     public static final String PREFERENCE_BRAND_LIST = "brand_list";
     public static final String ACCOUNT_USER_ID = "hbx_user_uid";
@@ -71,7 +71,6 @@ public class ConfigurationSync extends ApplicationBase {
 
     public ConfigurationSync(Application app, sync mListener) {
         super(app);
-        this.realm = Realm.getInstance(app);
         client = HBStoreApiClient.getInstance(app);
         //client.setLanguageBase(HBEditorialClient.BASE_EN);
         mOverheadRequest = client.createOverHead();
@@ -81,6 +80,7 @@ public class ConfigurationSync extends ApplicationBase {
 
     @Override
     protected void removeAllData() {
+        CacheManager.trimCache(app);
         saveInfo(PREFERENCE_FOUNDATION, "");
         saveInfo(PREFERENCE_BRAND_LIST, "");
         saveInfo(PREFERENCE_FOUNDATION_REGISTRATION, "");
@@ -88,6 +88,7 @@ public class ConfigurationSync extends ApplicationBase {
         saveInfo(ACCOUNT_SIG, "");
         saveInfo(ACCOUNT_USER, "");
         saveInfo(ACCOUNT_PASS, "");
+        client.removeAllCache();
     }
 
     public HBStoreApiClient getInstanceHBClient() {
@@ -280,10 +281,12 @@ public class ConfigurationSync extends ApplicationBase {
         if (mListener != null) mListener.error(error_messages);
     }
 
-    private void init() {
+    protected void init() {
+        super.init();
         String data = loadRef(PREFERENCE_FOUNDATION);
         String data_brand = loadRef(PREFERENCE_BRAND_LIST);
         String time = loadRef(PREFERENCE_FOUNDATION_REGISTRATION);
+
         if (!data.equalsIgnoreCase(EMPTY_FIELD) && !time.equalsIgnoreCase(EMPTY_FIELD)) {
             Timestamp past = Timestamp.valueOf(time);
             Date date = new Date();

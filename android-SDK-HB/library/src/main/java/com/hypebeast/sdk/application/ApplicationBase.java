@@ -4,14 +4,23 @@ import android.app.Application;
 import android.content.SharedPreferences;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.util.Log;
+import android.widget.TextView;
 
 import com.hypebeast.sdk.BuildConfig;
 import com.hypebeast.sdk.api.exception.NotFoundException;
+import com.hypebeast.sdk.api.realm.hbx.rProduct;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
 
 /**
  * Created by hesk on 18/11/15.
@@ -30,6 +39,10 @@ public abstract class ApplicationBase {
     public ApplicationBase(Application app) {
         this.app = app;
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(app);
+
+    }
+
+    protected void init() {
         checkDataVersioning();
     }
 
@@ -84,6 +97,24 @@ public abstract class ApplicationBase {
         }
     }
 
+    private String copyBundledRealmFile(InputStream inputStream, String outFileName) {
+        try {
+            File file = new File(app.getFilesDir(), outFileName);
+            FileOutputStream outputStream = new FileOutputStream(file);
+            byte[] buf = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buf)) > 0) {
+                outputStream.write(buf, 0, bytesRead);
+            }
+            outputStream.close();
+            return file.getAbsolutePath();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
     /**
      * save dictionary for a group of keywords
      *
@@ -108,8 +139,8 @@ public abstract class ApplicationBase {
         if (loadRef(tag).equalsIgnoreCase(EMPTY_FIELD))
             throw new NotFoundException("There is no data found from the field " + tag);
         final String block = loadRef(tag);
-        List<String> resultStringList = Arrays.asList(block.substring(0, block.length() - 1).substring(1).split("[\\s,]+"));
-        return resultStringList;
+        List<String> res_str = Arrays.asList(block.substring(0, block.length() - 1).substring(1).split("[\\s,]+"));
+        return res_str;
     }
 
     /**
@@ -141,4 +172,6 @@ public abstract class ApplicationBase {
             default_dictionary_list.remove(default_dictionary_list.indexOf(keyword));
         }
     }
+
+
 }

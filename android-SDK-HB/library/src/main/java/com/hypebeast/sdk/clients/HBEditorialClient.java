@@ -15,12 +15,15 @@ import com.hypebeast.sdk.api.gson.MissingCharacterConversion;
 import com.hypebeast.sdk.api.gson.RealmExclusion;
 import com.hypebeast.sdk.api.gson.WordpressConversion;
 import com.hypebeast.sdk.api.model.hbeditorial.Foundation;
+import com.hypebeast.sdk.api.model.hbeditorial.ResponsePostW;
 import com.hypebeast.sdk.api.resources.hypebeast.feedhost;
 import com.hypebeast.sdk.application.hypebeast.ConfigurationSync;
+import com.hypebeast.sdk.application.hypebeast.syncBookmark;
 
 import java.io.File;
 import java.io.IOException;
 
+import io.realm.RealmConfiguration;
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import retrofit.converter.GsonConverter;
@@ -47,20 +50,11 @@ public class HBEditorialClient extends Client {
     private RestAdapter mLoginAdapter;
 
     private static HBEditorialClient static_instance;
+    private syncBookmark bookmark_instance;
 
     @Deprecated
     public static HBEditorialClient newInstance() {
         return new HBEditorialClient();
-    }
-
-    @Deprecated
-    public static HBEditorialClient getInstance() {
-        if (static_instance == null) {
-            static_instance = new HBEditorialClient();
-            return static_instance;
-        } else {
-            return static_instance;
-        }
     }
 
     public static HBEditorialClient getInstance(Context c) {
@@ -71,6 +65,7 @@ public class HBEditorialClient extends Client {
             return static_instance;
         }
     }
+
 
     public static HBEditorialClient newInstance(Context c) {
         return new HBEditorialClient(c);
@@ -83,7 +78,9 @@ public class HBEditorialClient extends Client {
 
     public HBEditorialClient(Context c) {
         super(c);
+        bookmark_instance = new syncBookmark(c);
     }
+
 
     @Override
     protected RequestInterceptor getIn() {
@@ -105,6 +102,10 @@ public class HBEditorialClient extends Client {
                 }
             }
         };
+    }
+
+    public syncBookmark getBookmarkInstance() {
+        return bookmark_instance;
     }
 
     @Override
@@ -200,5 +201,6 @@ public class HBEditorialClient extends Client {
         String data = sharedPreferences.getString(ConfigurationSync.PREFERENCE_CSS, "");
         return data;
     }
+
 
 }
