@@ -19,6 +19,7 @@ import com.hypebeast.sdk.application.ApplicationBase;
 import com.hypebeast.sdk.application.hypebeast.syncDebug;
 import com.hypebeast.sdk.clients.HBStoreApiClient;
 
+import java.net.SocketTimeoutException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -45,7 +46,6 @@ public class ConfigurationSync extends ApplicationBase {
     private ResponseMobileOverhead mFoundation;
     private ResponseBrandList brandList;
     private HBStoreApiClient client;
-
     private ArrayList<sync> mListeners = new ArrayList<>();
     private Authentication request_login;
     private sync mListener;
@@ -58,7 +58,6 @@ public class ConfigurationSync extends ApplicationBase {
             instance.addInterface(mListener);
             instance.init();
         }
-
         return instance;
     }
 

@@ -52,11 +52,11 @@ public class MainActivity extends Splash {
                     @Override
                     public void run() {
 
-                     if(conf.isLoginStatusValid()){
-                         bind_has_login();
-                     }else{
-                         bind_not_login();
-                     }
+                        if (conf.isLoginStatusValid()) {
+                            bind_has_login(conf);
+                        } else {
+                            bind_not_login(conf);
+                        }
                     }
                 });
             }
@@ -77,19 +77,27 @@ public class MainActivity extends Splash {
     /**
      * extensive conten start from here
      */
-    private void bind_not_login() {
+    private void bind_not_login(ConfigurationSync data) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("https://");
+        sb.append(data.getFoundation().data.host);
+        sb.append("/login");
         getFragmentManager()
                 .beginTransaction()
-                .add(R.id.contentholder, loginfb.newInstance(loginfb.getURL(getString(R.string.url_account_web_login))), "fblogin")
+                .add(R.id.contentholder, loginfb.newInstance(
+                        //   loginfb.getURL(getString(R.string.url_account_web_login))
+                        loginfb.getURL(sb.toString())
+                ), "fblogin")
                 .addToBackStack(null)
                 .commit();
     }
 
-    private void bind_has_login() {
+    private void bind_has_login(ConfigurationSync data) {
         getFragmentManager()
                 .beginTransaction()
                 .add(R.id.contentholder,
-                       new LoginView(),
+                        new LoginView(),
                         "haslogin")
                 .addToBackStack(null)
                 .commit();

@@ -49,14 +49,17 @@ public class HBStoreApiClient extends Client {
     /**
      * Base URL for all Disqus endpoints
      */
-    private static final String BASE_URL_STORE = "https://store.hypebeast.com/";
+    //private static final String BASE_URL_STORE = "https://store.hypebeast.com/";
+    private static final String BASE_URL_STORE = "https://hbx.com/";
+    /**
+     * redirect url call back dow
+     */
     private static final String AUTHENTICATION = "http://hypebeast.com/";
     private static final String BASE_LOGIN = "https://disqus.com/api";
     /**
      * User agent
      */
-    private static final String USER_AGENT = "HypebeastStoreApp/1.0 Android" + Build.VERSION.SDK_INT;
-
+    private static final String USER_AGENT = "HypebeastStoreApp/1.0 Android " + Build.VERSION.SDK_INT;
     /**
      * login adapter
      */
@@ -194,6 +197,27 @@ public class HBStoreApiClient extends Client {
     }
 
     public Overhead createOverHead() {
+        /**
+         * create the authentication in here
+         */
+        RestAdapter mAdapter = new RestAdapter.Builder()
+                .setEndpoint("https://hbx.com/mobile-api/v1/config.json?platform=android")
+                .setLogLevel(RestAdapter.LogLevel.HEADERS)
+                .setErrorHandler(handlerError)
+                .setRequestInterceptor(
+                        new RequestInterceptor() {
+                            @Override
+                            public void intercept(RequestFacade request) {
+                                request.addHeader("User-Agent", get_USER_AGENT());
+                                request.addHeader("Accept", "application/json");
+                                request.addHeader("X-Api-Version", "2.0");
+                                request.addHeader("Cache-Control", "public, max-age=" + timeByMins(1));
+                            }
+                        }
+                )
+                .setConverter(new GsonConverter(gsonsetup))
+                .build();
+
         return mAdapter.create(Overhead.class);
     }
 
@@ -224,9 +248,8 @@ public class HBStoreApiClient extends Client {
     }
 
     private CookieHanger getCookieClient() {
-        return CookieHanger.base(BASE_URL_STORE);
+        return CookieHanger.base(data.getFoundation().data.host);
     }
-
 
     @Override
     protected RequestInterceptor getIn() {
@@ -238,13 +261,15 @@ public class HBStoreApiClient extends Client {
                 request.addHeader("X-Api-Version", "2.0");
                 //String cookietst = getCookieClient().getRaw();
                 //Log.d("loginHBX", "cookie set=" + cookietst);
-                request.addHeader("Cookie", getCookieClient().getRaw());
+                if (data != null) {
+                    if (!getCookieClient().getRaw().equalsIgnoreCase("")) {
+                        request.addHeader("Cookie", getCookieClient().getRaw());
+                    }
+                }
                 try {
                     if (Connectivity.isConnected(context)) {
                         request.addHeader("Cache-Control", "public, max-age=" + timeByMins(1));
-                    } //else {
-                    //  request.addHeader("Cache-Control", "public, only-if-cached, max-stale=" + timeByWeeks(1));
-                    // }
+                    }
                 } catch (Exception e) {
 
                 }
@@ -397,7 +422,6 @@ public class HBStoreApiClient extends Client {
                         boolean j = addToWishList(h);
                         if (j) processed++;
                     }
-
                     trigger_complete.success(reponseNormal.product_list.getlist(), processed, URL);
                 }
 
@@ -437,5 +461,7 @@ public class HBStoreApiClient extends Client {
         void falilure(String failed_message);
     }
 
-
+    public String getDomain() {
+        return data.getFoundation().data.host;
+    }
 }

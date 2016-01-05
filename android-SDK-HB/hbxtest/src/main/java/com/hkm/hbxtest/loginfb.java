@@ -42,7 +42,6 @@ public class loginfb extends BasicWebViewNormal {
     public static Bundle getURL(String url_initial) {
         final Bundle b = new Bundle();
         b.putString(URL_TAG, url_initial);
-
         return b;
     }
 

@@ -11,6 +11,6 @@ import retrofit.http.GET;
  * Created by hesk on 10/9/15.
  */
 public interface Overhead {
-    @GET("/mobile-api/v1/config.json?platform=android")
+    @GET("/")
     void mobile_config(final Callback<ResponseMobileOverhead> cb) throws ApiException;
 }

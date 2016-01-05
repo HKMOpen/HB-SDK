@@ -2,6 +2,7 @@ package com.hypebeast.sdk.Util;
 
 import android.annotation.TargetApi;
 import android.os.Build;
+import android.support.annotation.Nullable;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 
@@ -17,16 +18,15 @@ public class CookieHanger {
     public CookieHanger() {
     }
 
-    public static CookieHanger base(String url) {
+    public static CookieHanger base(@Nullable String url) {
         final CookieHanger c = new CookieHanger();
         c.setDomain(url);
         return c;
     }
 
-    private void setDomain(String domain) {
+    private void setDomain(@Nullable String domain) {
         this.domain = domain;
         instance = CookieManager.getInstance();
-
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -35,11 +35,14 @@ public class CookieHanger {
     }
 
     public String getRaw() {
+        if (domain == null) return "";
         if (_raw_cookie == null) {
             _raw_cookie = instance.getCookie(this.domain);
             if (_raw_cookie == null) return "";
-            else return _raw_cookie;
-        } else return _raw_cookie;
+            else
+                return _raw_cookie;
+        } else
+            return _raw_cookie;
     }
 
     public String getValue(String key_name) {
