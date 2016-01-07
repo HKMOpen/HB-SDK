@@ -10,6 +10,8 @@ import java.util.ArrayList;
 public class ResponsePostW {
     @SerializedName("posts")
     public PostsObject postList;
+    @SerializedName("title")
+    public String title;
 
     public int page_limit = 0;
     private ArrayList<ArticleData> list;
@@ -24,7 +26,6 @@ public class ResponsePostW {
     public ArrayList<ArticleData> getListFeed() {
         return list;
     }
-
 
 
 }
