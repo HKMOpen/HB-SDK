@@ -17,7 +17,7 @@ import com.greysonparrelli.permiso.Permiso;
  * Created by hesk on 18/11/15.
  */
 public abstract class Splash extends AppCompatActivity {
-    private Handler mhandle;
+    private Handler mhandle = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

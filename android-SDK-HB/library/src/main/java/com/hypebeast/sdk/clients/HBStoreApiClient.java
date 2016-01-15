@@ -60,6 +60,8 @@ public class HBStoreApiClient extends Client {
      * User agent
      */
     private static final String USER_AGENT = "HypebeastStoreApp/1.0 Android " + Build.VERSION.SDK_INT;
+
+    private static final String CONFIG_PATH = "https://hbx.com/mobile-api/v1/config.json?platform=android";
     /**
      * login adapter
      */
@@ -201,7 +203,7 @@ public class HBStoreApiClient extends Client {
          * create the authentication in here
          */
         RestAdapter mAdapter = new RestAdapter.Builder()
-                .setEndpoint("https://hbx.com/mobile-api/v1/config.json?platform=android")
+                .setEndpoint(CONFIG_PATH)
                 .setLogLevel(RestAdapter.LogLevel.HEADERS)
                 .setErrorHandler(handlerError)
                 .setRequestInterceptor(
@@ -248,7 +250,11 @@ public class HBStoreApiClient extends Client {
     }
 
     private CookieHanger getCookieClient() {
-        return CookieHanger.base(data.getFoundation().data.host);
+        if (data != null) {
+            return CookieHanger.base(data.getFoundation().data.host);
+        } else {
+            return CookieHanger.base(BASE_URL_STORE);
+        }
     }
 
     @Override
@@ -261,10 +267,8 @@ public class HBStoreApiClient extends Client {
                 request.addHeader("X-Api-Version", "2.0");
                 //String cookietst = getCookieClient().getRaw();
                 //Log.d("loginHBX", "cookie set=" + cookietst);
-                if (data != null) {
-                    if (!getCookieClient().getRaw().equalsIgnoreCase("")) {
-                        request.addHeader("Cookie", getCookieClient().getRaw());
-                    }
+                if (!getCookieClient().getRaw().equalsIgnoreCase("")) {
+                    request.addHeader("Cookie", getCookieClient().getRaw());
                 }
                 try {
                     if (Connectivity.isConnected(context)) {

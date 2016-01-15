@@ -17,6 +17,7 @@ import com.hypebeast.sdk.api.gson.WordpressConversion;
 import com.hypebeast.sdk.api.model.hbeditorial.Foundation;
 import com.hypebeast.sdk.api.model.hbeditorial.ResponsePostW;
 import com.hypebeast.sdk.api.resources.hypebeast.feedhost;
+import com.hypebeast.sdk.api.resources.hypebeast.overhead;
 import com.hypebeast.sdk.application.hypebeast.ConfigurationSync;
 import com.hypebeast.sdk.application.hypebeast.syncBookmark;
 
@@ -32,6 +33,7 @@ import retrofit.converter.GsonConverter;
  * Created by hesk on 2/7/15.
  */
 public class HBEditorialClient extends Client {
+
     /**
      * Base URL for all Disqus endpoints
      */
@@ -167,6 +169,23 @@ public class HBEditorialClient extends Client {
         return this;
     }
 
+    /**
+     * the overhead creation
+     *
+     * @param fullPath the path in string
+     * @return in the overhead in interface to be triggered.
+     */
+    public overhead createOverHead(final String fullPath) {
+        final RestAdapter mAdapter = new RestAdapter.Builder()
+                .setEndpoint(fullPath)
+                .setLogLevel(RestAdapter.LogLevel.HEADERS)
+                .setErrorHandler(handlerError)
+                .setRequestInterceptor(getIn())
+                .setConverter(new GsonConverter(gsonsetup))
+                .build();
+
+        return mAdapter.create(overhead.class);
+    }
 
     public feedhost createFeedInterface() {
         return mAdapter.create(feedhost.class);
@@ -179,7 +198,7 @@ public class HBEditorialClient extends Client {
      * @return the feedhost object
      */
     public feedhost createAPIUniversal(final String full_path) {
-        RestAdapter mAdapter = new RestAdapter.Builder()
+        final RestAdapter mAdapter = new RestAdapter.Builder()
                 .setEndpoint(full_path)
                 .setLogLevel(RestAdapter.LogLevel.HEADERS)
                 .setErrorHandler(handlerError)
@@ -202,5 +221,21 @@ public class HBEditorialClient extends Client {
         return data;
     }
 
+
+    private static final String LANG = "lang_val";
+
+    public void saveLanguage(String choice) {
+        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        sharedPreferences.edit().putString(LANG, choice).apply();
+    }
+
+    public String getLanguagePref() {
+        try {
+            final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+            return sharedPreferences.getString(LANG, "en");
+        } catch (NullPointerException e) {
+            return "en";
+        }
+    }
 
 }

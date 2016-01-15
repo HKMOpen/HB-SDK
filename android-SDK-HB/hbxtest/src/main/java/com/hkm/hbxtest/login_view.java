@@ -1,5 +1,6 @@
 package com.hkm.hbxtest;
 
+import android.os.Handler;
 import android.support.v4.view.ViewCompat;
 import android.view.View;
 import android.widget.Button;
@@ -18,7 +19,7 @@ import java.util.List;
 /**
  * Created by hesk on 10/12/15.
  */
-public class LoginView extends BasicWebViewNormal implements WishlistSync.syncResult {
+public class login_view extends BasicWebViewNormal implements WishlistSync.syncResult {
     @Override
     protected int LayoutID() {
         return R.layout.login_screen;
@@ -26,9 +27,12 @@ public class LoginView extends BasicWebViewNormal implements WishlistSync.syncRe
 
     Button logout_b, wish_list_b, store_products, upsync;
     TextView console;
+    Handler mHandler = new Handler();
+    HBStoreApiClient client;
 
     @Override
     protected void initBinding(View v) {
+        client = HBStoreApiClient.getInstance(getActivity());
         betterCircleBar = (CircleProgressBar) v.findViewById(com.hkm.ezwebview.R.id.wv_simple_process);
         logout_b = (Button) v.findViewById(R.id.logoutbutton);
         wish_list_b = (Button) v.findViewById(R.id.getwishlist);
@@ -36,7 +40,14 @@ public class LoginView extends BasicWebViewNormal implements WishlistSync.syncRe
         upsync = (Button) v.findViewById(R.id.up_sync);
         console = (TextView) v.findViewById(R.id.console);
 
-        completeloading();
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+
+                completeloading();
+            }
+        }, 100);
+
     }
 
     private void runbind() {
@@ -55,9 +66,8 @@ public class LoginView extends BasicWebViewNormal implements WishlistSync.syncRe
                 ViewCompat.animate(betterCircleBar).alpha(1f).withEndAction(new Runnable() {
                     @Override
                     public void run() {
-                        HBStoreApiClient
-                                .getInstance(getActivity())
-                                .setInterceptWishListProcess(LoginView.this)
+                        client
+                                .setInterceptWishListProcess(login_view.this)
                                 .requestWishList();
 
                     }
@@ -71,8 +81,7 @@ public class LoginView extends BasicWebViewNormal implements WishlistSync.syncRe
                 ViewCompat.animate(betterCircleBar).alpha(1f).withEndAction(new Runnable() {
                     @Override
                     public void run() {
-                        HBStoreApiClient
-                                .getInstance(getActivity())
+                        client
                                 .store_all_items_to_wishlist_from_uri(
                                         "http://store.hypebeast.com/categories/accessories/bags",
                                         new HBStoreApiClient.store_all_items_mock() {
@@ -100,9 +109,8 @@ public class LoginView extends BasicWebViewNormal implements WishlistSync.syncRe
                 ViewCompat.animate(betterCircleBar).alpha(1f).withEndAction(new Runnable() {
                     @Override
                     public void run() {
-                        HBStoreApiClient
-                                .getInstance(getActivity())
-                                .setInterceptWishListProcess(LoginView.this)
+                        client
+                                .setInterceptWishListProcess(login_view.this)
                                 .requestUpSyncWishList();
 
                     }

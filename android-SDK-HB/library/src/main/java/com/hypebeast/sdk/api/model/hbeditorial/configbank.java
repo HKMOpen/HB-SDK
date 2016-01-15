@@ -12,8 +12,14 @@ public class configbank {
     public String base;
     @SerializedName("menu")
     public ArrayList<Menuitem> menu;
+    //starting from v2.1
+    @SerializedName("categories")
+    public ArrayList<Menuitem> cateitems;
+
     @SerializedName("featurebanner")
     public ArrayList<Slide> featurebanner;
     @SerializedName("splash_screen")
     public splash splash_screen;
+    @SerializedName("navbar")
+    public ArrayList<Menuitem> nav_bar;
 }

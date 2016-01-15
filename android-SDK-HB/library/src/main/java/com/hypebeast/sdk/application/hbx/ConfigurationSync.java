@@ -2,6 +2,7 @@ package com.hypebeast.sdk.application.hbx;
 
 import android.app.Application;
 import android.content.SharedPreferences;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -49,6 +50,7 @@ public class ConfigurationSync extends ApplicationBase {
     private ArrayList<sync> mListeners = new ArrayList<>();
     private Authentication request_login;
     private sync mListener;
+    private boolean login_mechanism_done = false;
 
     public static ConfigurationSync with(Application app, sync mListener) {
         if (instance == null) {
@@ -111,12 +113,19 @@ public class ConfigurationSync extends ApplicationBase {
         isLogin = false;
     }
 
+    private void syncWorkerThread() {
+        syncCheckLogined();
+        syncBrandList();
+        syncAppBaseInfo();
+    }
+
     /**
      * completed the actions from the login process
      */
     private void executeListeners() {
         if (mFoundation == null) return;
         if (brandList == null) return;
+        if (!login_mechanism_done) return;
         if (mListener != null) {
             if (mListener instanceof sync) {
                 mListener.syncDone(instance, mFoundation);
@@ -137,19 +146,21 @@ public class ConfigurationSync extends ApplicationBase {
 
     private void syncCheckLogined() {
         try {
+            final Handler h = new Handler();
             final String user = loadRef(ACCOUNT_USER);
             final String pass = loadRef(ACCOUNT_PASS);
             final String sig = loadRef(ACCOUNT_SIG);
-            if (user.equalsIgnoreCase("none") || pass.equalsIgnoreCase("none")) {
-                if (!sig.equalsIgnoreCase("none")) {
-                    login_v1_authentication(sig);
-                } else {
-                    Log.d("loginHBX", "no authentication found and continue..");
-                    executeListeners();
-                    return;
-                }
+            if (!sig.equalsIgnoreCase(EMPTY_FIELD)) {
+                login_v1_authentication(sig);
             } else {
-                login_v2_authentication(user, pass, null);
+                h.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.d("loginHBX", "no authentication found and continue..");
+                        login_mechanism_done = true;
+                        executeListeners();
+                    }
+                }, 100);
             }
         } catch (ApiException e) {
             error_messages = "errors from the login process: " + e.getMessage();
@@ -158,6 +169,14 @@ public class ConfigurationSync extends ApplicationBase {
             //  if (mListener != null) mListener.error(e.getMessage());
         }
     }
+
+    /*
+    if (user.equalsIgnoreCase(EMPTY_FIELD) || pass.equalsIgnoreCase(EMPTY_FIELD)) {
+
+    } else {
+        login_v2_authentication(user, pass, null);
+    }
+    */
 
     /**
      * checking the login via session ID or token
@@ -172,14 +191,14 @@ public class ConfigurationSync extends ApplicationBase {
             @Override
             public void success(ResLoginCheck s, Response response) {
                 isLogin = true;
-                executeListeners();
+                login_mechanism_done = true;
                 Log.d("loginHBX", "login result : " + s);
+                executeListeners();
             }
 
             @Override
             public void failure(RetrofitError e) {
-                //if (mListener != null) mListener.error(e.getMessage());
-                //login failure
+                login_mechanism_done = true;
                 Log.d("loginHBX", "failure to login= " + e.getMessage());
                 executeListeners();
             }
@@ -224,11 +243,6 @@ public class ConfigurationSync extends ApplicationBase {
         });
     }
 
-    private void syncWorkerThread() {
-        syncBrandList();
-        syncAppBaseInfo();
-        syncCheckLogined();
-    }
 
     private void registerTimeBaseInfo() {
         Date date = new Date();
@@ -244,6 +258,7 @@ public class ConfigurationSync extends ApplicationBase {
                     mFoundation = foundation;
                     saveInfo(PREFERENCE_FOUNDATION, client.fromJsonToString(foundation));
                     registerTimeBaseInfo();
+                    executeListeners();
                 }
 
                 @Override
@@ -285,7 +300,7 @@ public class ConfigurationSync extends ApplicationBase {
         String data = loadRef(PREFERENCE_FOUNDATION);
         String data_brand = loadRef(PREFERENCE_BRAND_LIST);
         String time = loadRef(PREFERENCE_FOUNDATION_REGISTRATION);
-
+        login_mechanism_done = false;
         if (!data.equalsIgnoreCase(EMPTY_FIELD) && !time.equalsIgnoreCase(EMPTY_FIELD)) {
             Timestamp past = Timestamp.valueOf(time);
             Date date = new Date();
@@ -301,6 +316,7 @@ public class ConfigurationSync extends ApplicationBase {
                 } else {
                     mFoundation = client.converttoConfig(data);
                     brandList = client.converttoBrandList(data_brand);
+                    syncCheckLogined();
                     executeListeners();
                 }
             }

@@ -45,11 +45,6 @@ public interface feedhost {
             final @Path("page_no") int page_number,
             final Callback<ResponsePostFromSearch> cb) throws ApiException;
 
-    @GET("/api/mobile-app-config")
-    void mobile_config(
-            final Callback<Foundation> cb
-    ) throws ApiException;
-
     /**
      * adding additional page number to call the pagination API
      *

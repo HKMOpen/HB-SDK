@@ -3,46 +3,58 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
+
+    <TextView
+        android:id="@+id/console"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_margin="10dp"
+        android:background="@drawable/input"
+        android:minHeight="200dp"
+        android:padding="5dp"
+        android:singleLine="false"
+        android:textSize="15sp" />
+
+    <ScrollView
+        android:id="@+id/scrollview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_below="@id/console">
 
-        <Button
-            android:id="@+id/logoutbutton"
+        <LinearLayout
+            android:id="@+id/scrollcontainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Logout!!" />
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/logoutbutton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Logout!!" />
 
 
-        <Button
-            android:id="@+id/getwishlist"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Wish List Get!" />
+            <Button
+                android:id="@+id/getwishlist"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Wish List Get!" />
 
-        <Button
-            android:id="@+id/store_products_w"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Add batch items to the wishlist!" />
+            <Button
+                android:id="@+id/store_products_w"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Add batch items to the wishlist!" />
 
-        <Button
-            android:id="@+id/up_sync"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="up sync!" />
+            <Button
+                android:id="@+id/up_sync"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="up sync!" />
 
-        <TextView
-            android:id="@+id/console"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="10dp"
-            android:background="@drawable/input"
-            android:padding="5dp"
-            android:singleLine="false" />
-    </LinearLayout>
 
+        </LinearLayout>
+    </ScrollView>
     <!--   //wv_simple_process-->
     <com.lsjwzh.widget.materialloadingprogressbar.CircleProgressBar
         android:id="@id/wv_simple_process"

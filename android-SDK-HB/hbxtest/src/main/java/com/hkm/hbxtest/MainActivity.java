@@ -1,7 +1,6 @@
 package com.hkm.hbxtest;
 
 import android.Manifest;
-import android.os.Bundle;
 
 import com.greysonparrelli.permiso.Permiso;
 import com.hkm.hbxtest.Dialog.ErrorMessage;
@@ -46,17 +45,20 @@ public class MainActivity extends Splash {
             @Override
             public void syncDone(final ConfigurationSync conf, ResponseMobileOverhead data) {
                 StringBuilder h = new StringBuilder();
-                h.append("Successfully synced data. Now it will be closed ");
+                h.append("Successfully synced data. Now you will continue with the testing menu for the APIs");
                 HBStoreApiClient.getInstance(getApplication()).hookSyncTasker(conf);
                 ErrorMessage.alert(h.toString(), getFragmentManager(), new Runnable() {
                     @Override
                     public void run() {
 
+                        general_test();
+
+                        /*
                         if (conf.isLoginStatusValid()) {
                             bind_has_login(conf);
                         } else {
                             bind_not_login(conf);
-                        }
+                        }*/
                     }
                 });
             }
@@ -73,12 +75,18 @@ public class MainActivity extends Splash {
         });
     }
 
+    private void general_test() {
+        getFragmentManager()
+                .beginTransaction()
+                .add(R.id.contentholder, new general_test(), "general")
+                .addToBackStack(null)
+                .commit();
+    }
 
     /**
      * extensive conten start from here
      */
     private void bind_not_login(ConfigurationSync data) {
-
         StringBuilder sb = new StringBuilder();
         sb.append("https://");
         sb.append(data.getFoundation().data.host);
@@ -97,7 +105,7 @@ public class MainActivity extends Splash {
         getFragmentManager()
                 .beginTransaction()
                 .add(R.id.contentholder,
-                        new LoginView(),
+                        new login_view(),
                         "haslogin")
                 .addToBackStack(null)
                 .commit();

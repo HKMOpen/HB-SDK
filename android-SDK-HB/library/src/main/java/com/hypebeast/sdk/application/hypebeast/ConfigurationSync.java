@@ -13,6 +13,7 @@ import com.hypebeast.sdk.api.model.hbeditorial.Foundation;
 import com.hypebeast.sdk.api.model.hbeditorial.configbank;
 import com.hypebeast.sdk.api.resources.hypebeast.feedhost;
 import com.hypebeast.sdk.Util.UrlCache;
+import com.hypebeast.sdk.api.resources.hypebeast.overhead;
 import com.hypebeast.sdk.application.ApplicationBase;
 import com.hypebeast.sdk.clients.HBEditorialClient;
 
@@ -37,8 +38,9 @@ public class ConfigurationSync extends ApplicationBase {
     public static final String PREFERENCE_CSS = "main_css_file";
     public static final String PREFERENCE_FOUNDATION_REGISTRATION = "regtime";
     private static final String ACCESS_FILE_URL = "http://hypebeast.com/bundles/hypebeasteditorial/app/main.css";
+    private static final String CONFIG_ENDPOINT = "http://hypebeast.com/api/mobile-app-config?version=2.1";
 
-    private feedhost clientRequest;
+    private overhead clientRequest;
     private Foundation mFoundation;
     private HBEditorialClient client;
     private ArrayList<sync> mListeners = new ArrayList<>();
@@ -79,7 +81,6 @@ public class ConfigurationSync extends ApplicationBase {
         super(app);
         isFailure = false;
         client = HBEditorialClient.newInstance(app);
-        clientRequest = client.createFeedInterface();
         addInterface(mListener);
     }
 
@@ -157,7 +158,8 @@ public class ConfigurationSync extends ApplicationBase {
 
     private void syncWorkerThread() {
         try {
-            clientRequest.mobile_config(new Callback<Foundation>() {
+            clientRequest = client.createOverHead(CONFIG_ENDPOINT);
+            clientRequest.mobile_config_get(new Callback<Foundation>() {
                 @Override
                 public void success(Foundation foundation, Response response) {
                     mFoundation = foundation;

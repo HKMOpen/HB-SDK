@@ -2,7 +2,6 @@ package com.hkm.hbxtest;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,7 +16,6 @@ import com.hypebeast.sdk.clients.HBStoreApiClient;
 
 
 import com.hkm.ezwebview.Util.Fx9C;
-import com.hkm.ezwebview.Util.In32;
 import com.hkm.ezwebview.app.BasicWebViewNormal;
 import com.hkm.ezwebview.webviewclients.PaymentClient;
 
@@ -68,7 +66,7 @@ public class loginfb extends BasicWebViewNormal {
                 @Override
                 public void run() {
                     getFragmentManager().beginTransaction().replace(R.id.contentholder,
-                            new LoginView(), "afterlogin")
+                            new login_view(), "afterlogin")
                             .addToBackStack(null)
                             .commit();
                 }

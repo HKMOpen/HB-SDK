@@ -18,7 +18,6 @@ public class articlebookmark extends RealmObject {
     @PrimaryKey
     private long article_id;
 
-
     private String disqus_identifier;
     private String video_embed_code;
     private String author;
@@ -37,6 +36,16 @@ public class articlebookmark extends RealmObject {
     private String single_article_slug;
     private String single_article_date;
     private String _links;
+
+    public String getFirst_category() {
+        return first_category;
+    }
+
+    public void setFirst_category(String first_category) {
+        this.first_category = first_category;
+    }
+
+    private String first_category;
 
     public String get_links() {
         return _links;
