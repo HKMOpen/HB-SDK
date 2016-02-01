@@ -19,6 +19,7 @@ import com.hypebeast.sdk.api.model.hbeditorial.ResponsePostW;
 import com.hypebeast.sdk.api.resources.hypebeast.feedhost;
 import com.hypebeast.sdk.api.resources.hypebeast.overhead;
 import com.hypebeast.sdk.application.hypebeast.ConfigurationSync;
+import com.hypebeast.sdk.application.hypebeast.DisqusComment;
 import com.hypebeast.sdk.application.hypebeast.syncBookmark;
 
 import java.io.File;
@@ -53,6 +54,7 @@ public class HBEditorialClient extends Client {
 
     private static HBEditorialClient static_instance;
     private syncBookmark bookmark_instance;
+    private DisqusComment dis_comment_instance;
 
     @Deprecated
     public static HBEditorialClient newInstance() {
@@ -81,6 +83,7 @@ public class HBEditorialClient extends Client {
     public HBEditorialClient(Context c) {
         super(c);
         bookmark_instance = new syncBookmark(c);
+        dis_comment_instance = new DisqusComment(c);
     }
 
 
@@ -104,6 +107,10 @@ public class HBEditorialClient extends Client {
                 }
             }
         };
+    }
+
+    public DisqusComment getDisqusComments() {
+        return dis_comment_instance;
     }
 
     public syncBookmark getBookmarkInstance() {
