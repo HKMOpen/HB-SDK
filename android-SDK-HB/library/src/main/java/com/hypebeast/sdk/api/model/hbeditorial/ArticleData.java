@@ -28,6 +28,8 @@ public class ArticleData {
     private int commentCount = -1;
     @SerializedName("_embedded")
     public EmbedPayload _embedded;
+    @SerializedName("comment_status")
+    public String comment_status;
 
     public ArticleData() {
     }

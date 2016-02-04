@@ -22,6 +22,8 @@ public class PostsObject {
     public LinkPages _links;
     @SerializedName("_embedded")
     public EmbedPayload _embedded;
+    @SerializedName("comment_status")
+    public String comment_status;
 
     public PostsObject() {
     }

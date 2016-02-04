@@ -91,6 +91,13 @@ public class UrlCache {
         return error_message_thrown;
     }
 
+
+    /**
+     * this is a blocking code
+     *
+     * @param url the url for the file
+     * @return downloaded file with the formate web resource response
+     */
     public WebResourceResponse load(final String url) {
         final CacheEntry cacheEntry = this.cacheEntries.get(url);
         if (cacheEntry == null) return null;
@@ -161,6 +168,7 @@ public class UrlCache {
 
     /**
      * download the file form the internet and store it in the specific path
+     * the is the blocking code too
      *
      * @param url        the url
      * @param cacheEntry the object entry
@@ -202,6 +210,31 @@ public class UrlCache {
     public static void loadFromLocalFileText(String full_path_cachedFile, final readDone action) throws IOException {
         File myDir = new File(full_path_cachedFile);
         loadFromLocalFileText(myDir, action);
+    }
+
+    public static String loadFromLocalFileTextTask(String folder_name, String file_name) throws IOException {
+        String root = Environment.getExternalStorageDirectory().toString() + File.separator;
+        File myDir = new File(root + folder_name + File.separator + file_name);
+        return loadFromLocalFileTextTask(myDir);
+    }
+
+    public static String loadFromLocalFileTextTask(String full_path_cachedFile) throws IOException {
+        File myDir = new File(full_path_cachedFile);
+        return loadFromLocalFileTextTask(myDir);
+    }
+
+    public static String loadFromLocalFileTextTask(File cachedFile) throws IOException {
+        String UTF8 = "utf8";
+        int BUFFER_SIZE = 8192;
+        final BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(cachedFile), UTF8), BUFFER_SIZE);
+
+        String temp_line;
+        StringBuilder sb = new StringBuilder();
+
+        while ((temp_line = br.readLine()) != null) {
+            sb.append(temp_line);
+        }
+        return sb.toString();
     }
 
     public static void loadFromLocalFileText(File cachedFile, final readDone read_done) throws IOException {

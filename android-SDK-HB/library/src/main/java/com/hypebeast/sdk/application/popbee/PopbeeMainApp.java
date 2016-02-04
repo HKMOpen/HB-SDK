@@ -1,15 +1,30 @@
 package com.hypebeast.sdk.application.popbee;
 
 import android.app.Application;
+import android.content.SharedPreferences;
+import android.os.Environment;
+import android.preference.PreferenceManager;
+import android.webkit.WebResourceResponse;
 
 import com.hypebeast.sdk.Constants;
+import com.hypebeast.sdk.Util.UrlCache;
 import com.hypebeast.sdk.application.ApplicationBase;
 import com.hypebeast.sdk.clients.PBEditorialClient;
 
+import org.apache.commons.io.IOUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 import bolts.CancellationToken;
+import bolts.CancellationTokenSource;
+import bolts.Continuation;
 import bolts.Task;
 import bolts.TaskCompletionSource;
 
@@ -62,7 +77,21 @@ public class PopbeeMainApp extends ApplicationBase {
 
     protected void init() {
         super.init();
-
+        CancellationTokenSource cts = new CancellationTokenSource();
+        getIntAsync(cts.getToken()).continueWithTask(new Continuation<String, Task<Void>>() {
+            @Override
+            public Task<Void> then(Task<String> task) throws Exception {
+                ArrayList<Task<Void>> tasks = new ArrayList<Task<Void>>();
+                tasks.add(setCssFile());
+                return Task.whenAll(tasks);
+            }
+        }).onSuccess(new Continuation<Void, Void>() {
+            @Override
+            public Void then(Task<Void> ignored) throws Exception {
+                // Every comment was deleted.
+                return null;
+            }
+        });
 
     }
 
@@ -71,6 +100,37 @@ public class PopbeeMainApp extends ApplicationBase {
 
     }
 
+    public static final String folder_name_local = "hb.editorials";
+    private static final String ACCESS_FILE_URL = "http://popbee.com/wp-content/themes/popbee-v6/app/main.css";
+    public static final String local_css_file_name = "pb.css";
+
+    /*
+    blocking tasking in here
+     */
+    public Task<Void> setCssFile() {
+        TaskCompletionSource<Void> successful = new TaskCompletionSource<>();
+        StringWriter writer = new StringWriter();
+        final String root = Environment.getExternalStorageDirectory().toString() + File.separator;
+        final File myDir = new File(root + folder_name_local);
+        UrlCache mUrlCache = new UrlCache(app, myDir);
+        mUrlCache.register(ACCESS_FILE_URL, local_css_file_name, "text/css", "UTF-8", 5 * UrlCache.ONE_DAY);
+        SharedPreferences share = PreferenceManager.getDefaultSharedPreferences(app);
+        //  cssLoader = new LoadCacheCssN(mUrlCache, PreferenceManager.getDefaultSharedPreferences(app));
+        WebResourceResponse loadedcontent = mUrlCache.load(ACCESS_FILE_URL);
+        if (loadedcontent == null) {
+
+
+        }
+
+        try {
+            IOUtils.copy(loadedcontent.getData(), writer, "UTF-8");
+        } catch (IOException e) {
+            successful.setError(e);
+        }
+
+
+        return successful.getTask();
+    }
 
     public Task<String> getIntAsync(final CancellationToken ct) {
         // Create a new Task
@@ -93,8 +153,6 @@ public class PopbeeMainApp extends ApplicationBase {
                     }
                     result++;
                 }
-
-
                 tcs.setResult("done");
             }
         }.start();
