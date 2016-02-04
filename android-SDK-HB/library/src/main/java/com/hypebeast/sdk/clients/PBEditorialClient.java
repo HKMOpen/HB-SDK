@@ -1,5 +1,6 @@
 package com.hypebeast.sdk.clients;
 
+import android.app.Application;
 import android.os.Build;
 
 import com.google.gson.GsonBuilder;
@@ -49,9 +50,19 @@ public class PBEditorialClient extends Client {
         return new PBEditorialClient();
     }
 
+    @Deprecated
     public static PBEditorialClient getInstance() {
         if (static_instance == null) {
             static_instance = new PBEditorialClient();
+            return static_instance;
+        } else {
+            return static_instance;
+        }
+    }
+
+    public static PBEditorialClient getInstance(Application context) {
+        if (static_instance == null) {
+            static_instance = new PBEditorialClient(context);
             return static_instance;
         } else {
             return static_instance;
@@ -80,13 +91,16 @@ public class PBEditorialClient extends Client {
                 .setDateFormat(DATE_FORMAT)
                 .setExclusionStrategies(new RealmExclusion())
                 .registerTypeAdapterFactory(new GsonFactory.NullStringToEmptyAdapterFactory())
-              //  .registerTypeAdapter(String.class, new MissingCharacterConversion())
+                        //  .registerTypeAdapter(String.class, new MissingCharacterConversion())
                 .registerTypeAdapter(String.class, new WordpressConversion())
                 .create();
     }
 
     public PBEditorialClient() {
         super();
+    }
+    public PBEditorialClient(Application context) {
+        super(context);
     }
 
     public pbPost createPostsFeed() {

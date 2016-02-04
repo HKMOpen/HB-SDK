@@ -30,7 +30,6 @@ import com.hypebeast.sdk.api.resources.hbstore.SingleProduct;
 import com.hypebeast.sdk.application.hbx.ConfigurationSync;
 import com.hypebeast.sdk.application.hbx.WishlistSync;
 
-import net.sjava.advancedasynctask.AdvancedAsyncTask;
 
 import java.util.Iterator;
 import java.util.List;

@@ -1,5 +1,6 @@
 package com.hypebeast.sdk.clients;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
@@ -62,6 +63,7 @@ public class HTEditorialClient extends Client {
         return new HTEditorialClient();
     }
 
+    @Deprecated
     public static HTEditorialClient getInstance() {
         if (static_instance == null) {
             static_instance = new HTEditorialClient();
@@ -71,6 +73,14 @@ public class HTEditorialClient extends Client {
         }
     }
 
+    public static HTEditorialClient getInstance(Application context) {
+        if (static_instance == null) {
+            static_instance = new HTEditorialClient(context);
+            return static_instance;
+        } else {
+            return static_instance;
+        }
+    }
 
     @Override
     protected void registerAdapter() {
@@ -105,6 +115,10 @@ public class HTEditorialClient extends Client {
 
     public HTEditorialClient() {
         super();
+    }
+
+    public HTEditorialClient(Application context) {
+        super(context);
     }
 
     public hTrak createPostsFeed() {

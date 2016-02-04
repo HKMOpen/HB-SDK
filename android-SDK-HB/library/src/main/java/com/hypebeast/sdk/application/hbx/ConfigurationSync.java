@@ -1,9 +1,7 @@
 package com.hypebeast.sdk.application.hbx;
 
 import android.app.Application;
-import android.content.SharedPreferences;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -17,15 +15,12 @@ import com.hypebeast.sdk.api.model.hypebeaststore.ResponseMobileOverhead;
 import com.hypebeast.sdk.api.resources.hbstore.Authentication;
 import com.hypebeast.sdk.api.resources.hbstore.Overhead;
 import com.hypebeast.sdk.application.ApplicationBase;
-import com.hypebeast.sdk.application.hypebeast.syncDebug;
 import com.hypebeast.sdk.clients.HBStoreApiClient;
 
-import java.net.SocketTimeoutException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 
-import io.realm.Realm;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;

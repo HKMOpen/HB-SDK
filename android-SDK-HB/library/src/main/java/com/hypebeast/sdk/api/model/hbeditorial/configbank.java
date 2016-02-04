@@ -15,9 +15,10 @@ public class configbank {
     //starting from v2.1
     @SerializedName("categories")
     public ArrayList<Menuitem> cateitems;
-
     @SerializedName("featurebanner")
     public ArrayList<Slide> featurebanner;
+    @SerializedName("main_feature_banner")
+    public Slide table_only_feature_banner;
     @SerializedName("splash_screen")
     public splash splash_screen;
     @SerializedName("navbar")
