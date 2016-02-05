@@ -40,7 +40,9 @@ import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 import retrofit.converter.GsonConverter;
+
 import static com.hypebeast.sdk.Constants.*;
+
 /**
  * Created by hesk on 30/6/15.
  */
@@ -69,6 +71,7 @@ public class HBStoreApiClient extends Client {
     private ConfigurationSync data;
     private WishlistSync mWishlist;
     protected WishlistSync.syncResult sync_result_wishlist;
+    private String SDK_VERSION = "V1";
 
     @Deprecated
     public static HBStoreApiClient newInstance() {
@@ -269,6 +272,9 @@ public class HBStoreApiClient extends Client {
                 if (!getCookieClient().getRaw().equalsIgnoreCase("")) {
                     request.addHeader("Cookie", getCookieClient().getRaw());
                 }
+
+                request.addQueryParam("version", "2.1");
+
                 try {
                     if (Connectivity.isConnected(context)) {
                         request.addHeader("Cache-Control", "public, max-age=" + timeByMins(1));
