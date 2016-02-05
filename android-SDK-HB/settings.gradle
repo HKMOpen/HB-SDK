@@ -1,1 +1,1 @@
-include ':library', ':hbeditorialtest', ':hbxtest'
+include ':library', ':hbclient', ':hbxtest', ':pbclient'

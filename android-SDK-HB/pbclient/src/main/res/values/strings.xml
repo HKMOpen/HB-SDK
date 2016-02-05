@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name" translatable="false">02 PB Experiment</string>
+    <string name="exit_alert">exit this app?</string>
+</resources>

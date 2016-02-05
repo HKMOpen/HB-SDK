@@ -4,14 +4,12 @@ import android.app.Application;
 import android.content.SharedPreferences;
 import android.os.Environment;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 import com.hypebeast.sdk.Constants;
 import com.hypebeast.sdk.Util.LoadCacheCss;
 import com.hypebeast.sdk.api.exception.ApiException;
 import com.hypebeast.sdk.api.model.hbeditorial.Foundation;
 import com.hypebeast.sdk.api.model.hbeditorial.configbank;
-import com.hypebeast.sdk.api.resources.hypebeast.feedhost;
 import com.hypebeast.sdk.Util.UrlCache;
 import com.hypebeast.sdk.api.resources.hypebeast.overhead;
 import com.hypebeast.sdk.application.ApplicationBase;
@@ -22,21 +20,16 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 
-import io.realm.Realm;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
-
+import static com.hypebeast.sdk.Constants.*;
 /**
  * Created by hesk on 1/9/15.
  */
 public class ConfigurationSync extends ApplicationBase {
     public static ConfigurationSync instance;
-    public static final String folder_name_local = "hb.editorials";
     public static final String local_css_file_name = "hb_article_content.css";
-    public static final String PREFERENCE_FOUNDATION = "foundationfile";
-    public static final String PREFERENCE_CSS = "main_css_file";
-    public static final String PREFERENCE_FOUNDATION_REGISTRATION = "regtime";
     private static final String ACCESS_FILE_URL = "http://hypebeast.com/bundles/hypebeasteditorial/app/main.css";
     private static final String CONFIG_ENDPOINT = "http://hypebeast.com/api/mobile-app-config?version=2.1";
 
@@ -65,8 +58,8 @@ public class ConfigurationSync extends ApplicationBase {
 
     @Override
     protected void removeAllData() {
-        saveInfo(PREFERENCE_FOUNDATION, "");
-        saveInfo(PREFERENCE_CSS, "");
+        saveInfo(PREFERENCE_FOUNDATION_FILE_CONTENT, "");
+        saveInfo(PREFERENCE_CSS_FILE_CONTENT, "");
         saveInfo(PREFERENCE_FOUNDATION_REGISTRATION, "");
     }
 
@@ -130,13 +123,13 @@ public class ConfigurationSync extends ApplicationBase {
 
         @Override
         protected String getSaveTag() {
-            return PREFERENCE_CSS;
+            return PREFERENCE_CSS_FILE_CONTENT;
         }
     }
 
     private void prepareCacheConfiguration() {
         final String root = Environment.getExternalStorageDirectory().toString() + File.separator;
-        final File myDir = new File(root + folder_name_local);
+        final File myDir = new File(root + APP_FOLDER_NAME);
         mUrlCache = new UrlCache(app, myDir);
         mUrlCache.register(ACCESS_FILE_URL, local_css_file_name, "text/css", "UTF-8", 5 * UrlCache.ONE_DAY);
         cssLoader = new LoadCacheCssN(mUrlCache, PreferenceManager.getDefaultSharedPreferences(app));
@@ -163,7 +156,7 @@ public class ConfigurationSync extends ApplicationBase {
                 @Override
                 public void success(Foundation foundation, Response response) {
                     mFoundation = foundation;
-                    saveInfo(PREFERENCE_FOUNDATION, client.fromJsonToString(foundation));
+                    saveInfo(PREFERENCE_FOUNDATION_FILE_CONTENT, client.fromJsonToString(foundation));
                     Date date = new Date();
                     Timestamp timestamp = new Timestamp(date.getTime());
                     saveInfo(PREFERENCE_FOUNDATION_REGISTRATION, timestamp.toString());
@@ -186,7 +179,7 @@ public class ConfigurationSync extends ApplicationBase {
     protected void init() {
         super.init();
         prepareCacheConfiguration();
-        String data = loadRef(PREFERENCE_FOUNDATION);
+        String data = loadRef(PREFERENCE_FOUNDATION_FILE_CONTENT);
         String time = loadRef(PREFERENCE_FOUNDATION_REGISTRATION);
         if (!data.equalsIgnoreCase(EMPTY_FIELD) && !time.equalsIgnoreCase(EMPTY_FIELD)) {
             Timestamp past = Timestamp.valueOf(time);

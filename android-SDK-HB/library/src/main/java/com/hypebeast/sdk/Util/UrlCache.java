@@ -201,17 +201,40 @@ public class UrlCache {
         void stringBlock(String here_article);
     }
 
+    /**
+     * THE ASYNC TASK FOR LOADING THE FILE FROM THE LOCAL DIRECTORY INTO STRING
+     *
+     * @param folder_name the name of the folder
+     * @param file_name   the name of the file
+     * @param action      the action for callbacks
+     * @throws IOException the exception
+     */
     public static void loadFromLocalFileText(String folder_name, String file_name, final readDone action) throws IOException {
         String root = Environment.getExternalStorageDirectory().toString() + File.separator;
         File myDir = new File(root + folder_name + File.separator + file_name);
         loadFromLocalFileText(myDir, action);
     }
 
+    /**
+     * THE ASYNC TASK FOR LOADING THE FILE FROM THE LOCAL DIRECTORY INTO STRING
+     *
+     * @param full_path_cachedFile the name of the file in full path
+     * @param action               the action for callbacks
+     * @throws IOException the exception
+     */
     public static void loadFromLocalFileText(String full_path_cachedFile, final readDone action) throws IOException {
         File myDir = new File(full_path_cachedFile);
         loadFromLocalFileText(myDir, action);
     }
 
+    /**
+     * the blocking task
+     *
+     * @param folder_name the folder name only
+     * @param file_name   just the name of the file
+     * @return string
+     * @throws IOException exception
+     */
     public static String loadFromLocalFileTextTask(String folder_name, String file_name) throws IOException {
         String root = Environment.getExternalStorageDirectory().toString() + File.separator;
         File myDir = new File(root + folder_name + File.separator + file_name);

@@ -40,7 +40,7 @@ import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 import retrofit.converter.GsonConverter;
-
+import static com.hypebeast.sdk.Constants.*;
 /**
  * Created by hesk on 30/6/15.
  */

@@ -25,18 +25,17 @@ import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
+import static com.hypebeast.sdk.Constants.*;
+
 /**
  * Created by hesk on 1/9/15.
  */
 public class ConfigurationSync extends ApplicationBase {
     public static ConfigurationSync instance;
-    public static final String PREFERENCE_FOUNDATION = "foundationfile";
-    public static final String PREFERENCE_BRAND_LIST = "brand_list";
     public static final String ACCOUNT_USER_ID = "hbx_user_uid";
     public static final String ACCOUNT_SIG = "hbx_PHPSYLIUSID";
     public static final String ACCOUNT_USER = "hbx_username";
     public static final String ACCOUNT_PASS = "hbx_password";
-    public static final String PREFERENCE_FOUNDATION_REGISTRATION = "regtime";
     private String error_messages;
     private Overhead mOverheadRequest;
     private ResponseMobileOverhead mFoundation;
@@ -77,7 +76,7 @@ public class ConfigurationSync extends ApplicationBase {
     @Override
     protected void removeAllData() {
         CacheManager.trimCache(app);
-        saveInfo(PREFERENCE_FOUNDATION, "");
+        saveInfo(PREFERENCE_FOUNDATION_FILE_CONTENT, "");
         saveInfo(PREFERENCE_BRAND_LIST, "");
         saveInfo(PREFERENCE_FOUNDATION_REGISTRATION, "");
         saveInfo(ACCOUNT_USER_ID, "");
@@ -251,7 +250,7 @@ public class ConfigurationSync extends ApplicationBase {
                 @Override
                 public void success(ResponseMobileOverhead foundation, Response response) {
                     mFoundation = foundation;
-                    saveInfo(PREFERENCE_FOUNDATION, client.fromJsonToString(foundation));
+                    saveInfo(PREFERENCE_FOUNDATION_FILE_CONTENT, client.fromJsonToString(foundation));
                     registerTimeBaseInfo();
                     executeListeners();
                 }
@@ -292,7 +291,7 @@ public class ConfigurationSync extends ApplicationBase {
 
     protected void init() {
         super.init();
-        String data = loadRef(PREFERENCE_FOUNDATION);
+        String data = loadRef(PREFERENCE_FOUNDATION_FILE_CONTENT);
         String data_brand = loadRef(PREFERENCE_BRAND_LIST);
         String time = loadRef(PREFERENCE_FOUNDATION_REGISTRATION);
         login_mechanism_done = false;

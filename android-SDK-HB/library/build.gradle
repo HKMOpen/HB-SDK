@@ -51,6 +51,7 @@ dependencies {
     // testCompile 'org.hamcrest:hamcrest-library:1.1'
     compile 'com.parse.bolts:bolts-tasks:1.4.0'
     compile 'com.parse.bolts:bolts-applinks:1.4.0'
+    compile 'net.sjava:advancedasynctask:1.0.1'
 
 }
 

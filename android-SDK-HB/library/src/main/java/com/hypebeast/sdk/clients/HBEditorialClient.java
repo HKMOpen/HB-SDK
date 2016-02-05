@@ -30,6 +30,8 @@ import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import retrofit.converter.GsonConverter;
 
+import static com.hypebeast.sdk.Constants.*;
+
 /**
  * Created by hesk on 2/7/15.
  */
@@ -219,12 +221,12 @@ public class HBEditorialClient extends Client {
 
     public void getCSSLocal(UrlCache.readDone done_load) throws IOException {
         String root = Environment.getExternalStorageDirectory().toString() + File.separator;
-        UrlCache.loadFromLocalFileText(ConfigurationSync.folder_name_local, ConfigurationSync.local_css_file_name, done_load);
+        UrlCache.loadFromLocalFileText(APP_FOLDER_NAME, ConfigurationSync.local_css_file_name, done_load);
     }
 
     public String getCSSFast() {
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        String data = sharedPreferences.getString(ConfigurationSync.PREFERENCE_CSS, "");
+        String data = sharedPreferences.getString(PREFERENCE_CSS_FILE_CONTENT, "");
         return data;
     }
 

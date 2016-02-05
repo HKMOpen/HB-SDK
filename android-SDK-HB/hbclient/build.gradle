@@ -1,0 +1,71 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.2"
+    def configConstants = new Properties()
+    def Props = file("applaunch.properties")
+    if (Props.exists()) {
+        Props.withInputStream {
+            stream -> configConstants.load(stream)
+        }
+    }
+    signingConfigs {
+        nativehome {
+            storeFile file('/Users/hesk/Documents/certs/notupdatedGhesk.keystore')
+            storePassword "kmk12345"
+            keyAlias "hypebeasteditorial"
+            keyPassword "kmk12345"
+        }
+    }
+    defaultConfig {
+        applicationId "com.hbexperiement.hb"
+        minSdkVersion 17
+        targetSdkVersion 23
+        versionCode 10
+        versionName "1.5h"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.nativehome
+        }
+
+        applicationVariants.all { variant ->
+            variant.outputs.each { output ->
+                def date = new Date();
+                def formattedDate = date.format('yyyyMMddHHmmss')
+                output.outputFile = new File(output.outputFile.parent,
+                        output.outputFile.name.replace("-release", "." + formattedDate + "-v." + defaultConfig.versionName)
+                )
+            }
+        }
+    }
+    productFlavors {
+        native_test {
+            applicationId "com.hbexperiement.hb"
+            versionName defaultConfig.versionName
+            signingConfig signingConfigs.nativehome
+            buildConfigField "String", "CUSTOM_MENU", "\"${configConstants.CUSTOM_MENU}\""
+        }
+
+
+    }
+}
+repositories {
+    jcenter()
+    maven { url "http://dl.bintray.com/jjhesk/maven" }
+    maven { url 'http://dl.bintray.com/madcyph3r/maven/' }
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+}
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:23.1.1'
+    debugCompile 'me.drakeet.library:crashwoodpecker:0.9.7'
+    releaseCompile 'me.drakeet.library:crashwoodpecker-do-nothing:0.9.7'
+    compile 'com.hkm.loyalslider:library:1.5.0'
+    compile 'com.hkm.ezwebview:library:1.2.6'
+    compile project(':library')
+}

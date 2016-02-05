@@ -54,4 +54,12 @@ public class Constants {
     public static final String authorizeCode = "/?code=";
     public static final long ONE_DAY = 8640000;
     public static final long ONE_MIN = 6000;
+
+
+    public static final String PREFERENCE_FOUNDATION_FILE_CONTENT = "APP_FOUNDATION_CONTENT";
+    public static final String PREFERENCE_CSS_FILE_CONTENT = "APP_CSS_CONTENT";
+    public static final String PREFERENCE_BRAND_LIST = "APP_BRAND_LIST_CONTENT";
+    public static final String PREFERENCE_FOUNDATION_REGISTRATION = "APP_FOUNDATION_REG_TIMESTAMP";
+    public static final String APP_FOLDER_NAME = "folder_name_local";
+    public static final String APP_CSS_FILE_PATH = "css_file_local";
 }

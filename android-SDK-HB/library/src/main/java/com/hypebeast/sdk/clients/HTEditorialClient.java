@@ -4,10 +4,12 @@ import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 
 import com.google.gson.GsonBuilder;
 import com.hypebeast.sdk.Constants;
+import com.hypebeast.sdk.Util.UrlCache;
 import com.hypebeast.sdk.api.exception.ApiException;
 import com.hypebeast.sdk.api.gson.GsonFactory;
 import com.hypebeast.sdk.api.gson.MissingCharacterConversion;
@@ -17,7 +19,10 @@ import com.hypebeast.sdk.api.model.hbeditorial.Foundation;
 import com.hypebeast.sdk.api.model.popbees.mobileconfig;
 import com.hypebeast.sdk.api.resources.ht.hTrak;
 import com.hypebeast.sdk.api.resources.pb.pbPost;
+import com.hypebeast.sdk.application.hypebeast.ConfigurationSync;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Iterator;
@@ -29,6 +34,9 @@ import retrofit.RetrofitError;
 import retrofit.client.Header;
 import retrofit.client.Response;
 import retrofit.converter.GsonConverter;
+
+import static com.hypebeast.sdk.Constants.APP_FOLDER_NAME;
+import static com.hypebeast.sdk.Constants.PREFERENCE_CSS_FILE_CONTENT;
 
 /**
  * Created by hesk on 21/8/15.
@@ -211,6 +219,17 @@ public class HTEditorialClient extends Client {
         final String data = msharedPreferences.getString(REFERENCE_MOBILE_CONFIG, "");
         return gsonsetup.fromJson(data, mobileconfig.class);
 
+    }
+
+    public void getCSSLocal(UrlCache.readDone done_load) throws IOException {
+        String root = Environment.getExternalStorageDirectory().toString() + File.separator;
+        UrlCache.loadFromLocalFileText(APP_FOLDER_NAME, ConfigurationSync.local_css_file_name, done_load);
+    }
+
+    public String getCSSFast() {
+        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        String data = sharedPreferences.getString(PREFERENCE_CSS_FILE_CONTENT, "");
+        return data;
     }
 
 }
