@@ -6,7 +6,6 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 
 import com.hypebeast.sdk.Constants;
-import com.hypebeast.sdk.Util.LoadCacheCss;
 import com.hypebeast.sdk.api.exception.ApiException;
 import com.hypebeast.sdk.api.model.hbeditorial.Foundation;
 import com.hypebeast.sdk.api.model.hbeditorial.configbank;
@@ -20,18 +19,23 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 
+import bolts.CancellationTokenSource;
+import bolts.Continuation;
+import bolts.Task;
+import bolts.TaskCompletionSource;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
+
 import static com.hypebeast.sdk.Constants.*;
+
 /**
  * Created by hesk on 1/9/15.
  */
 public class ConfigurationSync extends ApplicationBase {
     public static ConfigurationSync instance;
-    public static final String local_css_file_name = "hb_article_content.css";
+    public static final String local_css_file_name = "hb.css";
     private static final String ACCESS_FILE_URL = "http://hypebeast.com/bundles/hypebeasteditorial/app/main.css";
-    private static final String CONFIG_ENDPOINT = "http://hypebeast.com/api/mobile-app-config?version=2.1";
 
     private overhead clientRequest;
     private Foundation mFoundation;
@@ -39,7 +43,7 @@ public class ConfigurationSync extends ApplicationBase {
     private ArrayList<sync> mListeners = new ArrayList<>();
     private sync mListener;
     private UrlCache mUrlCache;
-    private LoadCacheCss cssLoader;
+    // private LoadCacheCss cssLoader;
     private boolean isFailure;
     private String failure_message;
 
@@ -97,43 +101,33 @@ public class ConfigurationSync extends ApplicationBase {
         mListener = listenerSync;
     }
 
-
     private void complete_first_stage() {
-        cssLoader.setTargetGet(ACCESS_FILE_URL).execute();
+        //  cssLoader.setTargetGet(ACCESS_FILE_URL).execute();
+        CancellationTokenSource cts = new CancellationTokenSource();
+        getIntAsync(cts.getToken()).continueWithTask(new Continuation<String, Task<Void>>() {
+            @Override
+            public Task<Void> then(Task<String> task) throws Exception {
+                ArrayList<Task<Void>> tasks = new ArrayList<Task<Void>>();
+                tasks.add(setCssFile(ACCESS_FILE_URL, local_css_file_name));
+                return Task.whenAll(tasks);
+            }
+        }).onSuccess(new Continuation<Void, Void>() {
+            @Override
+            public Void then(Task<Void> ignored) throws Exception {
+                // Every comment was deleted.
+                //   mListener.syncDone(PopbeeMainApp.this, "done");
+                if (ignored.isCancelled() || ignored.isFaulted()) {
+                    isFailure = true;
+                } else {
+                    isFailure = false;
+                    complete_second_stage();
+                }
+                return null;
+            }
+        });
     }
 
 
-    private class LoadCacheCssN extends LoadCacheCss {
-
-        public LoadCacheCssN(UrlCache cache, SharedPreferences SP) {
-            super(cache, SP);
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-            complete_second_stage();
-        }
-
-        @Override
-        protected void onError(String m) {
-            failure_message = m;
-            isFailure = true;
-        }
-
-        @Override
-        protected String getSaveTag() {
-            return PREFERENCE_CSS_FILE_CONTENT;
-        }
-    }
-
-    private void prepareCacheConfiguration() {
-        final String root = Environment.getExternalStorageDirectory().toString() + File.separator;
-        final File myDir = new File(root + APP_FOLDER_NAME);
-        mUrlCache = new UrlCache(app, myDir);
-        mUrlCache.register(ACCESS_FILE_URL, local_css_file_name, "text/css", "UTF-8", 5 * UrlCache.ONE_DAY);
-        cssLoader = new LoadCacheCssN(mUrlCache, PreferenceManager.getDefaultSharedPreferences(app));
-    }
 
     private void complete_second_stage() {
         if (mListener != null) {
@@ -148,10 +142,9 @@ public class ConfigurationSync extends ApplicationBase {
         }
     }
 
-
     private void syncWorkerThread() {
         try {
-            clientRequest = client.createOverHead(CONFIG_ENDPOINT);
+            clientRequest = client.createOverHead(HB_EDITORIAL_CONFIG_TARGET);
             clientRequest.mobile_config_get(new Callback<Foundation>() {
                 @Override
                 public void success(Foundation foundation, Response response) {
@@ -175,10 +168,67 @@ public class ConfigurationSync extends ApplicationBase {
         }
     }
 
+    /**
+     * not completed yet
+     */
+    @Deprecated
+    protected void initV2() {
+        CancellationTokenSource cts = new CancellationTokenSource();
+        getIntAsync(cts.getToken())
+                .continueWithTask(new Continuation<String, Task<Foundation>>() {
+                    @Override
+                    public Task<Foundation> then(Task<String> task) throws Exception {
+                        //final TaskCompletionSource<Foundation> ts = new TaskCompletionSource<>();
+                        Task<Foundation> taskh = Task.forResult(null);
+
+
+                        String data = loadRef(PREFERENCE_FOUNDATION_FILE_CONTENT);
+                        String time = loadRef(PREFERENCE_FOUNDATION_REGISTRATION);
+                        if (!data.equalsIgnoreCase(EMPTY_FIELD) && !time.equalsIgnoreCase(EMPTY_FIELD)) {
+                            Timestamp past = Timestamp.valueOf(time);
+                            Date date = new Date();
+                            //   Calendar cal1 = Calendar.getInstance();
+                            Timestamp now = new Timestamp(date.getTime());
+                            long pastms = past.getTime();
+                            long nowms = now.getTime();
+                            if (nowms - pastms > Constants.ONE_DAY) {
+                                syncWorkerThread();
+                            } else {
+                                if (data.equalsIgnoreCase("")) {
+                                    syncWorkerThread();
+                                } else {
+                                    mFoundation = client.fromsavedConfiguration(data);
+                                    complete_first_stage();
+                                }
+                            }
+                        } else if (data.equalsIgnoreCase(EMPTY_FIELD) || time.equalsIgnoreCase(EMPTY_FIELD)) {
+                            syncWorkerThread();
+                        }
+
+
+                        return taskh;
+                    }
+                })
+                .onSuccessTask(new Continuation<Foundation, Task<Void>>() {
+                    @Override
+                    public Task<Void> then(Task<Foundation> task) throws Exception {
+                        ArrayList<Task<Void>> tasks = new ArrayList<Task<Void>>();
+                        tasks.add(setCssFile(ACCESS_FILE_URL, local_css_file_name));
+                        return Task.whenAll(tasks);
+                    }
+                })
+                .onSuccess(new Continuation<Void, Void>() {
+                    @Override
+                    public Void then(Task<Void> ignored) throws Exception {
+                        // Every comment was deleted.
+                        //mListener.syncDone(PopbeeMainApp.this, "done");
+                        return null;
+                    }
+                });
+    }
 
     protected void init() {
         super.init();
-        prepareCacheConfiguration();
         String data = loadRef(PREFERENCE_FOUNDATION_FILE_CONTENT);
         String time = loadRef(PREFERENCE_FOUNDATION_REGISTRATION);
         if (!data.equalsIgnoreCase(EMPTY_FIELD) && !time.equalsIgnoreCase(EMPTY_FIELD)) {

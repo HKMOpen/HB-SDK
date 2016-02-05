@@ -8,8 +8,6 @@ import java.util.ArrayList;
  * Created by hesk on 13/8/15.
  */
 public class PostsObject {
-
-
     @SerializedName("page")
     public int page;
     @SerializedName("limit")
@@ -46,5 +44,10 @@ public class PostsObject {
 
     public int getTotal() {
         return total;
+    }
+
+    public boolean allowComment() {
+        if (comment_status == null) return false;
+        return comment_status.equalsIgnoreCase("open");
     }
 }

@@ -53,7 +53,7 @@ public class WebviewIntercept extends WebViewClient {
         if (rs.getUrl().toString().startsWith("http://tutorials.jenkov.com/images/logo.png")) {
             return loadFromAssets(rs.getUrl().toString(), "images/logo.png", "image/png", "");
         }
-        return this.urlCache.load(rs.getUrl().toString());
+        return this.urlCache.load();
     }
 
     private WebResourceResponse loadFromAssets(

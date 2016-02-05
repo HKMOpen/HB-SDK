@@ -16,4 +16,9 @@ public interface overhead {
 
     @GET("/")
     void mobile_config_get(final Callback<Foundation> cb) throws ApiException;
+
+    @GET("/")
+    Foundation mobile_config_get() throws ApiException;
+
+
 }

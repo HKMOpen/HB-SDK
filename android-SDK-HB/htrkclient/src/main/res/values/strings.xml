@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name" translatable="false">04 HTK Experiment</string>
+    <string name="exit_alert">exit this app?</string>
+</resources>

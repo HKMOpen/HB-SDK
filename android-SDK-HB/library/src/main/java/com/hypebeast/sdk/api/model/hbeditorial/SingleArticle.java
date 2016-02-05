@@ -22,8 +22,16 @@ public class SingleArticle {
     public LinkSingle _links;
     @SerializedName("_embedded")
     public EmbedPayload _embedded;
+    @SerializedName("comment_status")
+    public String comment_status;
 
     public SingleArticle() {
     }
+
+    public boolean allowComment() {
+        if (comment_status == null) return false;
+        return comment_status.equalsIgnoreCase("open");
+    }
+
 
 }

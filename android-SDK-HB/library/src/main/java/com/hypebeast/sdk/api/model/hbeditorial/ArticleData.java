@@ -85,4 +85,10 @@ public class ArticleData {
     public void setCommentCount(int n) {
         commentCount = n;
     }
+
+    public boolean allowComment() {
+        if (comment_status == null) return false;
+        return comment_status.equalsIgnoreCase("open");
+    }
+
 }

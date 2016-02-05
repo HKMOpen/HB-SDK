@@ -64,7 +64,7 @@ public class UrlCache {
     protected Map<String, CacheEntry> cacheEntries = new HashMap<String, CacheEntry>();
     protected Context activity = null;
     protected File rootDir = null;
-
+    protected String url_internal;
     public static String LOG_TAG = "cacheEntry";
 
     public UrlCache(AppCompatActivity activity) {
@@ -85,6 +85,7 @@ public class UrlCache {
                          final long maxAgeMillis) {
         CacheEntry entry = new CacheEntry(url, cacheFileName, mimeType, encoding, maxAgeMillis);
         this.cacheEntries.put(url, entry);
+        url_internal = url;
     }
 
     public String getErrorMessage() {
@@ -95,11 +96,10 @@ public class UrlCache {
     /**
      * this is a blocking code
      *
-     * @param url the url for the file
      * @return downloaded file with the formate web resource response
      */
-    public WebResourceResponse load(final String url) {
-        final CacheEntry cacheEntry = this.cacheEntries.get(url);
+    public WebResourceResponse load() {
+        final CacheEntry cacheEntry = this.cacheEntries.get(url_internal);
         if (cacheEntry == null) return null;
         final File cachedFile = new File(this.rootDir.getPath() + File.separator + cacheEntry.fileName);
         if (cachedFile.exists()) {
@@ -107,18 +107,18 @@ public class UrlCache {
             if (cacheEntryAge > cacheEntry.maxAgeMillis) {
                 cachedFile.delete();
                 //cached file deleted, call load() again.
-                Log.d(LOG_TAG, "Deleting from cache: " + url);
-                return load(url);
+                Log.d(LOG_TAG, "Deleting from cache: " + url_internal);
+                return load();
             }
 
             //cached file exists and is not too old. Return file.
-            Log.d(LOG_TAG, "Loading from cache: " + url);
+            Log.d(LOG_TAG, "Loading from cache: " + url_internal);
             try {
                 WebResourceResponse file = new WebResourceResponse(cacheEntry.mimeType, cacheEntry.encoding, new FileInputStream(cachedFile));
                 if (file.getData().available() == 0) {
                     cachedFile.delete();
                     cachedFile.createNewFile();
-                    downladAndStoreOkHttp(url, cacheEntry, cachedFile);
+                    downladAndStoreOkHttp(url_internal, cacheEntry, cachedFile);
                 }
 
                 /**
@@ -151,13 +151,13 @@ public class UrlCache {
                 }
                 cachedFile.createNewFile();
                 // downloadAndStore(url, cacheEntry, cachedFile);
-                downladAndStoreOkHttp(url, cacheEntry, cachedFile);
+                downladAndStoreOkHttp(url_internal, cacheEntry, cachedFile);
                 //now the file exists in the cache, so we can just call this method again to read it.
-                return load(url);
+                return load();
             } catch (IOException e) {
                 error_message_thrown = e.getLocalizedMessage();
             } catch (Exception e) {
-                error_message_thrown = "Error reading file over network: " + cachedFile.getPath() + e.getMessage();
+                error_message_thrown = "Error reading file over network: " + cachedFile.getPath();
             }
         }
 

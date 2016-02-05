@@ -6,7 +6,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import com.greysonparrelli.permiso.Permiso;
-import com.hbed.pbclient.Dialog.ErrorMessage;
+import com.hbexperiement.pbclient.Dialog.ErrorMessage;
 import com.hypebeast.sdk.api.model.hbeditorial.Foundation;
 import com.hypebeast.sdk.application.Splash;
 import com.hypebeast.sdk.application.hypebeast.ConfigurationSync;

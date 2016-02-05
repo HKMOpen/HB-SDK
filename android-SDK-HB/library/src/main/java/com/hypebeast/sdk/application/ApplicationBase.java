@@ -5,22 +5,36 @@ import android.content.SharedPreferences;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.webkit.WebResourceResponse;
 import android.widget.TextView;
 
 import com.hypebeast.sdk.BuildConfig;
+import com.hypebeast.sdk.Util.UrlCache;
 import com.hypebeast.sdk.api.exception.NotFoundException;
 import com.hypebeast.sdk.api.realm.hbx.rProduct;
+
+import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import bolts.CancellationToken;
+import bolts.Task;
+import bolts.TaskCompletionSource;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
+
+import static com.hypebeast.sdk.Constants.APP_CSS_FILE_PATH;
+import static com.hypebeast.sdk.Constants.APP_FOLDER_NAME;
+import static com.hypebeast.sdk.Constants.PREFERENCE_CSS_FILE_CONTENT;
+
+import static com.hypebeast.sdk.Constants.*;
 
 /**
  * Created by hesk on 18/11/15.
@@ -174,4 +188,66 @@ public abstract class ApplicationBase {
     }
 
 
+    /*
+    blocking tasking in here
+     */
+    public Task<Void> setCssFile(final String access_endpoint, String local_css_name) {
+        TaskCompletionSource<Void> successful = new TaskCompletionSource<>();
+        StringWriter writer = new StringWriter();
+        final String root = Environment.getExternalStorageDirectory().toString() + File.separator;
+        final String path_final = root + APP_FOLDER_NAME;
+        final File myDir = new File(path_final);
+        UrlCache mUrlCache = new UrlCache(app, myDir);
+        mUrlCache.register(access_endpoint, local_css_name, "text/css", "UTF-8", 5 * UrlCache.ONE_DAY);
+        //  SharedPreferences share = PreferenceManager.getDefaultSharedPreferences(app);
+        if (loadRef(APP_CSS_FILE_PATH).equalsIgnoreCase(EMPTY_FIELD)) {
+            WebResourceResponse loadedcontent = mUrlCache.load();
+            if (loadedcontent != null) {
+                try {
+                    IOUtils.copy(loadedcontent.getData(), writer, "UTF-8");
+                    saveInfo(PREFERENCE_CSS_FILE_CONTENT, writer.toString());
+                    saveInfo(APP_CSS_FILE_PATH, path_final);
+                    successful.setResult(null);
+                } catch (IOException e) {
+                    successful.setError(e);
+                }
+            } else {
+                successful.setError(new Exception(mUrlCache.getErrorMessage()));
+            }
+        } else {
+            /**
+             * there is a file already saved
+             */
+            successful.setResult(null);
+        }
+        return successful.getTask();
+    }
+
+    public Task<String> getIntAsync(final CancellationToken ct) {
+        // Create a new Task
+        final TaskCompletionSource<String> tcs = new TaskCompletionSource<>();
+        new Thread() {
+            @Override
+            public void run() {
+                // Check if cancelled at start
+                if (ct.isCancellationRequested()) {
+                    tcs.setCancelled();
+                    return;
+                }
+
+                int result = 0;
+                while (result < 100) {
+                    // Poll isCancellationRequested in a loop
+                    if (ct.isCancellationRequested()) {
+                        tcs.setCancelled();
+                        return;
+                    }
+                    result++;
+                }
+                tcs.setResult("done");
+            }
+        }.start();
+
+        return tcs.getTask();
+    }
 }
