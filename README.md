@@ -9,13 +9,11 @@ API SDK will be cover
 - [x] Hypetrak
 - [x] Popbees
 
-
 setup
 ```gradle
-repositories {maven { url "http://dl.bintray.com/jjhesk/maven" }}
-
 dependencies {
-    compile 'com.hb:sdklibrary:0.6.6'
+    compile 'com.hb:sdklibrary:0.8.0'
 }
 
 ```
+[gradle setup](https://github.com/HKMOpen/SDKhb/blob/master/android-SDK-HB/library/build.gradle)
