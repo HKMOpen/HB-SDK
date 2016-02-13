@@ -12,8 +12,7 @@ API SDK will be cover
 
 	
 JCenter is the place to find and share popular Apache Maven packages for use by Maven, Gradle, Ivy, SBT, etc. 
-For the most comprehensive collection of artifacts, point your Maven at: http://jcenter.bintray.com 
-REMOTE REPOS: ```http://jcenter.bintray.com```
+For the most comprehensive collection of artifacts, point your Maven at: `http://jcenter.bintray.com` REMOTE REPOS: `http://jcenter.bintray.com`
 
 setup
 ```gradle
