@@ -53,6 +53,7 @@ public class Constants {
     public static final String refresh = "refresh_token";
     public static final String authorizeCode = "/?code=";
     public static final long ONE_DAY = 8640000;
+    public static final long ONE_HOUR = 360000;
     public static final long ONE_MIN = 6000;
 
 

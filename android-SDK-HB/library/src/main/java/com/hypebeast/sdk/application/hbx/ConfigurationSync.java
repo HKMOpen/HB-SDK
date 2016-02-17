@@ -1,12 +1,14 @@
 package com.hypebeast.sdk.application.hbx;
 
 import android.app.Application;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.hypebeast.sdk.Constants;
 import com.hypebeast.sdk.Util.CacheManager;
+import com.hypebeast.sdk.Util.Connectivity;
 import com.hypebeast.sdk.api.exception.ApiException;
 import com.hypebeast.sdk.api.model.hypebeaststore.ResLoginCheck;
 import com.hypebeast.sdk.api.model.hypebeaststore.ResLoginPassword;
@@ -21,6 +23,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 
+import bolts.Task;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -144,18 +147,25 @@ public class ConfigurationSync extends ApplicationBase {
             final String user = loadRef(ACCOUNT_USER);
             final String pass = loadRef(ACCOUNT_PASS);
             final String sig = loadRef(ACCOUNT_SIG);
-            if (!sig.equalsIgnoreCase(EMPTY_FIELD)) {
-                login_v1_authentication(sig);
+            boolean online = Connectivity.isConnected(app);
+            if (online) {
+                if (!sig.equalsIgnoreCase(EMPTY_FIELD)) {
+                    login_v1_authentication(sig);
+                } else {
+                    h.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            Log.d("loginHBX", "no authentication found and continue..");
+                            login_mechanism_done = true;
+                            executeListeners();
+                        }
+                    }, 100);
+                }
             } else {
-                h.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.d("loginHBX", "no authentication found and continue..");
-                        login_mechanism_done = true;
-                        executeListeners();
-                    }
-                }, 100);
+                login_mechanism_done = true;
+                executeListeners();
             }
+
         } catch (ApiException e) {
             error_messages = "errors from the login process: " + e.getMessage();
             Log.d("loginHBX", error_messages);
@@ -267,19 +277,27 @@ public class ConfigurationSync extends ApplicationBase {
 
     private void syncBrandList() {
         try {
-            client.createBrand().getAll(new Callback<ResponseBrandList>() {
-                @Override
-                public void success(ResponseBrandList responseBrandList, Response response) {
-                    brandList = responseBrandList;
-                    saveInfo(PREFERENCE_BRAND_LIST, client.fromJsonToString(responseBrandList));
-                    executeListeners();
-                }
+            boolean online = Connectivity.isConnected(app);
+            if (brandList == null || loadRef(PREFERENCE_BRAND_LIST).equalsIgnoreCase(EMPTY_FIELD)) {
+                if (online) {
+                    client.createBrand().getAll(new Callback<ResponseBrandList>() {
+                        @Override
+                        public void success(ResponseBrandList responseBrandList, Response response) {
+                            brandList = responseBrandList;
+                            saveInfo(PREFERENCE_BRAND_LIST, client.fromJsonToString(responseBrandList));
+                            executeListeners();
+                        }
 
-                @Override
-                public void failure(RetrofitError error) {
-                    triggerFatalError(error.getMessage());
+                        @Override
+                        public void failure(RetrofitError error) {
+                            triggerFatalError(error.getMessage());
+                        }
+                    });
                 }
-            });
+            } else {
+                executeListeners();
+            }
+
         } catch (ApiException e) {
             triggerFatalError(e.getMessage());
         }
@@ -289,33 +307,56 @@ public class ConfigurationSync extends ApplicationBase {
         if (mListener != null) mListener.error(error_messages);
     }
 
+    class threadWork extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            return null;
+        }
+    }
+
+    private void checkTime(String time, String data, String data_brand) {
+        Timestamp past = Timestamp.valueOf(time);
+        Date date = new Date();
+        //   Calendar cal1 = Calendar.getInstance();
+        Timestamp now = new Timestamp(date.getTime());
+        long pastms = past.getTime();
+        long nowms = now.getTime();
+        if (nowms - pastms > Constants.ONE_HOUR) {
+            syncWorkerThread();
+        } else {
+            if (data.equalsIgnoreCase(EMPTY_FIELD) || data_brand.equalsIgnoreCase(EMPTY_FIELD)) {
+                syncWorkerThread();
+            } else {
+                mFoundation = client.converttoConfig(data);
+                brandList = client.converttoBrandList(data_brand);
+                syncCheckLogined();
+                executeListeners();
+            }
+        }
+    }
+
     protected void init() {
         super.init();
         String data = loadRef(PREFERENCE_FOUNDATION_FILE_CONTENT);
         String data_brand = loadRef(PREFERENCE_BRAND_LIST);
         String time = loadRef(PREFERENCE_FOUNDATION_REGISTRATION);
         login_mechanism_done = false;
-        if (!data.equalsIgnoreCase(EMPTY_FIELD) && !time.equalsIgnoreCase(EMPTY_FIELD)) {
-            Timestamp past = Timestamp.valueOf(time);
-            Date date = new Date();
-            //   Calendar cal1 = Calendar.getInstance();
-            Timestamp now = new Timestamp(date.getTime());
-            long pastms = past.getTime();
-            long nowms = now.getTime();
-            if (nowms - pastms > Constants.ONE_DAY) {
-                syncWorkerThread();
-            } else {
-                if (data.equalsIgnoreCase(EMPTY_FIELD) || data_brand.equalsIgnoreCase(EMPTY_FIELD)) {
-                    syncWorkerThread();
-                } else {
-                    mFoundation = client.converttoConfig(data);
-                    brandList = client.converttoBrandList(data_brand);
-                    syncCheckLogined();
-                    executeListeners();
-                }
-            }
-        } else if (data.equalsIgnoreCase(EMPTY_FIELD) || time.equalsIgnoreCase(EMPTY_FIELD) || data_brand.equalsIgnoreCase(EMPTY_FIELD)) {
+        boolean online = Connectivity.isConnected(app);
+        boolean emptydatabase = data.equalsIgnoreCase(EMPTY_FIELD) || time.equalsIgnoreCase(EMPTY_FIELD) || data_brand.equalsIgnoreCase(EMPTY_FIELD);
+        if (online && emptydatabase || !online && emptydatabase) {
             syncWorkerThread();
+        } else if (!online && emptydatabase) {
+            removeAllData();
+            //throw error
+            triggerFatalError("This app cannot be started because there is no internet detected.");
+        } else if (online && !emptydatabase) {
+            checkTime(time, data, data_brand);
+        } else {
+            mFoundation = client.converttoConfig(data);
+            brandList = client.converttoBrandList(data_brand);
+            login_mechanism_done = true;
+            executeListeners();
         }
     }
 
