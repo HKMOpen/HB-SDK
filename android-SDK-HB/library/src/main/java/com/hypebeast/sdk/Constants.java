@@ -61,12 +61,15 @@ public class Constants {
     public static final String PREFERENCE_CSS_FILE_CONTENT = "APP_CSS_CONTENT";
     public static final String PREFERENCE_BRAND_LIST = "APP_BRAND_LIST_CONTENT";
     public static final String PREFERENCE_FOUNDATION_REGISTRATION = "APP_FOUNDATION_REG_TIMESTAMP";
-
     public static final String APP_CSS_FILE_PATH = "css_file_local";
 
     public static final String APP_FOLDER_NAME = "com.hypebeast";
-    public static final String HB_EDITORIAL_CONFIG_TARGET = "http://hypebeast.com/api/mobile-app-config?version=2.1";
+
+
+    public static final String HB_EDITORIAL_CONFIG_TARGET = "http://hypebeast.com/api/mobile-app-config?version=2.2";
     public static final String HBX_CONFIG_TARGET = "http://hypebeast.com/api/mobile-app-config?version=2.1";
     public static final String POPBEE_CONFIG_TARGET = "http://hypebeast.com/api/mobile-app-config?version=2.1";
     public static final String HYPETRAKE_CONFIG_TARGET = "http://hypebeast.com/api/mobile-app-config?version=2.1";
+
+
 }

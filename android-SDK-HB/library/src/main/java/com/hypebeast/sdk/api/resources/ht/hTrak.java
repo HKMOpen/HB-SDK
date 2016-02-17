@@ -2,7 +2,7 @@ package com.hypebeast.sdk.api.resources.ht;
 
 import com.hypebeast.sdk.api.exception.ApiException;
 import com.hypebeast.sdk.api.model.hypetrak.htpost;
-import com.hypebeast.sdk.api.model.popbees.mobileconfig;
+import com.hypebeast.sdk.api.model.popbees.PBmobileConfig;
 
 import java.util.List;
 
@@ -83,6 +83,6 @@ public interface hTrak {
 
 
     @GET("/wp-json/mobile-config")
-    void mobile_config(final Callback<mobileconfig> cb) throws ApiException;
+    void mobile_config(final Callback<PBmobileConfig> cb) throws ApiException;
 
 }

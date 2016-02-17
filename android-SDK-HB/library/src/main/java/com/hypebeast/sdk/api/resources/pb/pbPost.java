@@ -2,9 +2,8 @@ package com.hypebeast.sdk.api.resources.pb;
 
 import com.hypebeast.sdk.api.exception.ApiException;
 import com.hypebeast.sdk.api.model.hypetrak.htpost;
-import com.hypebeast.sdk.api.model.popbees.mobileconfig;
+import com.hypebeast.sdk.api.model.popbees.PBmobileConfig;
 import com.hypebeast.sdk.api.model.popbees.pbpost;
-import com.hypebeast.sdk.api.model.wprest.post;
 
 import java.util.List;
 
@@ -78,7 +77,7 @@ public interface pbPost {
 
 
     @GET("/wp-json/mobile-config")
-    void mobile_config(final Callback<mobileconfig> cb) throws ApiException;
+    void mobile_config(final Callback<PBmobileConfig> cb) throws ApiException;
 
 
 }

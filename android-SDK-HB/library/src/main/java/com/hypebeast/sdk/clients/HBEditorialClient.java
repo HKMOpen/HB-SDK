@@ -96,13 +96,13 @@ public class HBEditorialClient extends Client {
             public void intercept(RequestFacade request) {
                 request.addHeader("User-Agent", get_USER_AGENT());
                 request.addHeader("Accept", "application/json");
-                request.addHeader("X-Api-Version", "2.0");
+                // request.addHeader("X-Api-Version", "2.0");
                 // request.addHeader("Cookie", getCookieClient().getRaw());
                 try {
                     if (Connectivity.isConnected(context)) {
                         request.addHeader("Cache-Control", "public, max-age=" + timeByMins(1));
                     } else {
-                        request.addHeader("Cache-Control", "public, only-if-cached, max-stale=" + timeByWeeks(1));
+                     //   request.addHeader("Cache-Control", "public, only-if-cached, max-stale=" + timeByWeeks(1));
                     }
                 } catch (Exception e) {
 

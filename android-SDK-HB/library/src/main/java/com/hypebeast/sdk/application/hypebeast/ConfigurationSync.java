@@ -1,20 +1,16 @@
 package com.hypebeast.sdk.application.hypebeast;
 
 import android.app.Application;
-import android.content.SharedPreferences;
-import android.os.Environment;
-import android.preference.PreferenceManager;
 
 import com.hypebeast.sdk.Constants;
 import com.hypebeast.sdk.api.exception.ApiException;
 import com.hypebeast.sdk.api.model.hbeditorial.Foundation;
-import com.hypebeast.sdk.api.model.hbeditorial.configbank;
+import com.hypebeast.sdk.api.model.hbeditorial.HBmobileConfig;
 import com.hypebeast.sdk.Util.UrlCache;
 import com.hypebeast.sdk.api.resources.hypebeast.overhead;
 import com.hypebeast.sdk.application.ApplicationBase;
 import com.hypebeast.sdk.clients.HBEditorialClient;
 
-import java.io.File;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -22,7 +18,6 @@ import java.util.Date;
 import bolts.CancellationTokenSource;
 import bolts.Continuation;
 import bolts.Task;
-import bolts.TaskCompletionSource;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -258,7 +253,7 @@ public class ConfigurationSync extends ApplicationBase {
     }
 
 
-    public configbank getByLanguage(String lang) {
+    public HBmobileConfig getByLanguage(String lang) {
         if (lang.equals("en")) {
             return mFoundation.english;
         } else if (lang.equals("zh_CN")) {

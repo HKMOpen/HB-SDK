@@ -12,13 +12,10 @@ import com.hypebeast.sdk.Constants;
 import com.hypebeast.sdk.Util.UrlCache;
 import com.hypebeast.sdk.api.exception.ApiException;
 import com.hypebeast.sdk.api.gson.GsonFactory;
-import com.hypebeast.sdk.api.gson.MissingCharacterConversion;
 import com.hypebeast.sdk.api.gson.RealmExclusion;
 import com.hypebeast.sdk.api.gson.WordpressConversion;
-import com.hypebeast.sdk.api.model.hbeditorial.Foundation;
-import com.hypebeast.sdk.api.model.popbees.mobileconfig;
+import com.hypebeast.sdk.api.model.popbees.PBmobileConfig;
 import com.hypebeast.sdk.api.resources.ht.hTrak;
-import com.hypebeast.sdk.api.resources.pb.pbPost;
 import com.hypebeast.sdk.application.hypebeast.ConfigurationSync;
 
 import java.io.File;
@@ -160,9 +157,9 @@ public class HTEditorialClient extends Client {
             public void run() {
 
                 try {
-                    interfaceHTrak.mobile_config(new Callback<mobileconfig>() {
+                    interfaceHTrak.mobile_config(new Callback<PBmobileConfig>() {
                         @Override
-                        public void success(mobileconfig mMobileconfig, Response response) {
+                        public void success(PBmobileConfig mMobileconfig, Response response) {
 
 
                             sharedPreferences
@@ -214,10 +211,10 @@ public class HTEditorialClient extends Client {
 
     }
 
-    public mobileconfig readConfig(final Context context) {
+    public PBmobileConfig readConfig(final Context context) {
         final SharedPreferences msharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         final String data = msharedPreferences.getString(REFERENCE_MOBILE_CONFIG, "");
-        return gsonsetup.fromJson(data, mobileconfig.class);
+        return gsonsetup.fromJson(data, PBmobileConfig.class);
 
     }
 

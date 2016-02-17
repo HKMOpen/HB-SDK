@@ -7,11 +7,11 @@ import com.google.gson.annotations.SerializedName;
  */
 public class Foundation {
     @SerializedName("en")
-    public configbank english;
+    public HBmobileConfig english;
     @SerializedName("cnt")
-    public configbank chinese_traditional;
+    public HBmobileConfig chinese_traditional;
     @SerializedName("cns")
-    public configbank chinese_simplified;
+    public HBmobileConfig chinese_simplified;
     @SerializedName("ja")
-    public configbank japanese;
+    public HBmobileConfig japanese;
 }

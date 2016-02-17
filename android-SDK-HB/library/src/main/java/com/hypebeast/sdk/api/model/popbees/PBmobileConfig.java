@@ -12,7 +12,7 @@ import java.util.List;
  *
  * Created by hesk on 15/7/15.
  */
-public class mobileconfig {
+public class PBmobileConfig {
     @SerializedName("feature_banners")
     public List<sliderItem> featurebanner;
 
