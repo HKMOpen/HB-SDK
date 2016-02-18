@@ -1,6 +1,8 @@
 package com.hypebeast.sdk.api.model.hbeditorial;
 
 import com.google.gson.annotations.SerializedName;
+import com.hypebeast.sdk.api.model.common.about;
+import com.hypebeast.sdk.api.model.common.referralApp;
 
 import java.util.ArrayList;
 
@@ -35,8 +37,20 @@ public class HBmobileConfig {
     public ArrayList<Menuitem> nav_bar;
 
 
+
+    @SerializedName("other_apps")
+    public ArrayList<referralApp> applist;
+
+
+
+    @SerializedName("about")
+    public ArrayList<about> aboutlist;
+
+
+
     @SerializedName("featurebanner")
     public ArrayList<Slide> featurebanner;
+
 
 
     @SerializedName("main_feature_banner")

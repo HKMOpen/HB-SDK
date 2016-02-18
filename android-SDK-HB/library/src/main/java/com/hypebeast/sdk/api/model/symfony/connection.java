@@ -14,5 +14,4 @@ public class connection {
     public LinkContainer brand;
     @SerializedName("group_products")
     public ArrayList<ProductGroupContainer> group_products = new ArrayList<>();
-
 }
