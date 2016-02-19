@@ -60,7 +60,7 @@ public class HBmobileConfig {
     /**
      * added since v2.2
      */
-    @SerializedName("post_template")
+    @SerializedName("post_html_template")
     public String html_base;
 
 

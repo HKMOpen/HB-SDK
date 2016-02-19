@@ -17,4 +17,7 @@ public class Config {
     @SerializedName("categories")
     public List<CategoryItem> categories;
 
+    @SerializedName("product_description_html_template")
+    public String productdesc_html_template;
+
 }
