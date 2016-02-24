@@ -127,11 +127,11 @@ public abstract class Client {
         }
     }
 
-    public void removeAllCache() {
+    public final void removeAllCache() {
         try {
+            if (mCache == null) return;
             Iterator<String> it = mCache.urls();
             while (it.hasNext()) {
-                String next = it.next();
                 it.remove();
             }
         } catch (IOException e) {
@@ -139,8 +139,9 @@ public abstract class Client {
         }
     }
 
-    public void removeFromCache(String urlString) {
+    public final void removeFromCache(String urlString) {
         try {
+            if (mCache == null) return;
             Iterator<String> it = mCache.urls();
             while (it.hasNext()) {
                 String next = it.next();
