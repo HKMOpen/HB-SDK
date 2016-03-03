@@ -43,16 +43,14 @@ public class MainActivity extends Splash {
     protected void synchronizeData() {
         ConfigurationSync.with(getApplication(), new sync() {
             @Override
-            public void syncDone(final ConfigurationSync conf, ResponseMobileOverhead data) {
+            public void syncDone(final ConfigurationSync cdata, ResponseMobileOverhead data) {
                 StringBuilder h = new StringBuilder();
                 h.append("Successfully synced data. Now you will continue with the testing menu for the APIs");
-                HBStoreApiClient.getInstance(getApplication()).hookSyncTasker(conf);
+                HBStoreApiClient.getInstance(getApplication()).hookSyncTasker(cdata);
                 ErrorMessage.alert(h.toString(), getFragmentManager(), new Runnable() {
                     @Override
                     public void run() {
-
                         general_test();
-
                         /*
                         if (conf.isLoginStatusValid()) {
                             bind_has_login(conf);

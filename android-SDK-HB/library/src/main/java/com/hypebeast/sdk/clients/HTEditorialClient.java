@@ -17,6 +17,8 @@ import com.hypebeast.sdk.api.gson.WordpressConversion;
 import com.hypebeast.sdk.api.model.popbees.PBmobileConfig;
 import com.hypebeast.sdk.api.resources.ht.hTrak;
 import com.hypebeast.sdk.application.hypebeast.ConfigurationSync;
+import com.hypebeast.sdk.clients.basic.Client;
+import com.hypebeast.sdk.clients.basic.apiInterceptor;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import retrofit.Callback;
+import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Header;
@@ -43,10 +46,7 @@ public class HTEditorialClient extends Client {
      * Base URL for all PB endpoints
      */
     private static final String BASE_URL_PB = "http://hypetrak.com/";
-    /**
-     * User agent
-     */
-    private static final String USER_AGENT = "PT/1.0 Android" + Build.VERSION.SDK_INT;
+    private static final String API_VERSION = "1.0";
     /**
      * Date format
      */
@@ -93,15 +93,11 @@ public class HTEditorialClient extends Client {
                 .setEndpoint(BASE_URL_PB)
                 .setLogLevel(RestAdapter.LogLevel.HEADERS)
                 .setErrorHandler(handlerError)
-                .setRequestInterceptor(getIn())
+                .setRequestInterceptor(gatewayRequest())
                 .setConverter(new GsonConverter(gsonsetup))
                 .build();
     }
 
-    @Override
-    protected String get_USER_AGENT() {
-        return USER_AGENT;
-    }
 
     @Override
     protected void jsonCreate() {
@@ -120,6 +116,18 @@ public class HTEditorialClient extends Client {
 
     public HTEditorialClient() {
         super();
+    }
+
+    private apiInterceptor interterceptor;
+
+    @Override
+    protected RequestInterceptor gatewayRequest() {
+        if (interterceptor == null) {
+            interterceptor = new apiInterceptor();
+            interterceptor.setCacheMinutes(5);
+            interterceptor.setAPIVersion(API_VERSION);
+        }
+        return interterceptor;
     }
 
     public HTEditorialClient(Application context) {

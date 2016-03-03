@@ -7,7 +7,8 @@
         android:id="@+id/textviewcontainer"
         android:layout_width="match_parent"
         android:layout_height="200dp"
-        android:padding="5dp">
+        android:background="@android:color/black"
+        android:padding="2dp">
 
         <TextView
             android:id="@+id/console"
@@ -16,6 +17,7 @@
             android:layout_margin="10dp"
             android:scrollbars="vertical"
             android:singleLine="false"
+            android:textColor="@android:color/white"
             android:textSize="15sp" />
     </ScrollView>
 
@@ -70,6 +72,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Log In Page" />
+
+            <Button
+                android:id="@+id/template_show"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Template" />
 
 
         </LinearLayout>

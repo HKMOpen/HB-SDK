@@ -3,7 +3,6 @@ package com.hypebeast.sdk.clients;
 import android.content.Context;
 import android.os.Build;
 import android.support.annotation.Nullable;
-import android.support.annotation.WorkerThread;
 import android.util.Log;
 
 import com.google.gson.GsonBuilder;
@@ -12,7 +11,6 @@ import com.hypebeast.sdk.Util.Connectivity;
 import com.hypebeast.sdk.Util.CookieHanger;
 import com.hypebeast.sdk.api.exception.ApiException;
 import com.hypebeast.sdk.api.gson.GsonFactory;
-import com.hypebeast.sdk.api.gson.MissingCharacterConversion;
 import com.hypebeast.sdk.api.gson.RealmExclusion;
 import com.hypebeast.sdk.api.gson.StringConverter;
 import com.hypebeast.sdk.api.gson.WordpressConversion;
@@ -20,7 +18,6 @@ import com.hypebeast.sdk.api.model.hypebeaststore.ReponseNormal;
 import com.hypebeast.sdk.api.model.hypebeaststore.ResponseBrandList;
 import com.hypebeast.sdk.api.model.hypebeaststore.ResponseMobileOverhead;
 import com.hypebeast.sdk.api.model.symfony.Product;
-import com.hypebeast.sdk.api.model.symfony.wish;
 import com.hypebeast.sdk.api.realm.hbx.rProduct;
 import com.hypebeast.sdk.api.resources.hbstore.Authentication;
 import com.hypebeast.sdk.api.resources.hbstore.Brand;
@@ -29,6 +26,8 @@ import com.hypebeast.sdk.api.resources.hbstore.Products;
 import com.hypebeast.sdk.api.resources.hbstore.SingleProduct;
 import com.hypebeast.sdk.application.hbx.ConfigurationSync;
 import com.hypebeast.sdk.application.hbx.WishlistSync;
+import com.hypebeast.sdk.clients.basic.Client;
+import com.hypebeast.sdk.clients.basic.apiInterceptor;
 
 
 import java.util.Iterator;
@@ -40,8 +39,6 @@ import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 import retrofit.converter.GsonConverter;
-
-import static com.hypebeast.sdk.Constants.*;
 
 /**
  * Created by hesk on 30/6/15.
@@ -57,12 +54,9 @@ public class HBStoreApiClient extends Client {
      */
     private static final String AUTHENTICATION = "http://hypebeast.com/";
     private static final String BASE_LOGIN = "https://disqus.com/api";
-    /**
-     * User agent
-     */
-    private static final String USER_AGENT = "HypebeastStoreApp/1.0 Android " + Build.VERSION.SDK_INT;
 
-    private static final String CONFIG_PATH = "https://hbx.com/mobile-api/v1/config.json?platform=android";
+    private static final String CONFIG_PATH = "https://hbx.com/mobile-api/v1/config.json";
+    private static final String API_VERSION = "2.1";
     /**
      * login adapter
      */
@@ -71,7 +65,6 @@ public class HBStoreApiClient extends Client {
     private ConfigurationSync data;
     private WishlistSync mWishlist;
     protected WishlistSync.syncResult sync_result_wishlist;
-    private String SDK_VERSION = "V1";
 
     @Deprecated
     public static HBStoreApiClient newInstance() {
@@ -128,17 +121,13 @@ public class HBStoreApiClient extends Client {
                 RestAdapter.LogLevel.FULL);
     }
 
-    @Override
-    protected String get_USER_AGENT() {
-        return USER_AGENT;
-    }
 
     @Override
     protected void jsonCreate() {
         gsonsetup = new GsonBuilder()
                 .setDateFormat(Constants.DATE_FORMAT)
                 .registerTypeAdapterFactory(new GsonFactory.NullStringToEmptyAdapterFactory())
-                .registerTypeAdapter(String.class, new WordpressConversion())
+                //.registerTypeAdapter(String.class, new WordpressConversion())
                 .setExclusionStrategies(new RealmExclusion())
                 .create();
     }
@@ -158,27 +147,9 @@ public class HBStoreApiClient extends Client {
                 .setEndpoint(endpoint)
                 .setLogLevel(RestAdapter.LogLevel.FULL)
                 .setErrorHandler(handlerError)
-                .setRequestInterceptor(getIn())
+                .setRequestInterceptor(gatewayRequest())
                 .setConverter(new GsonConverter(gsonsetup))
                 .build();
-    }
-
-    /**
-     * this will only returns the authentication in string as result
-     *
-     * @return Authentication
-     */
-    @Deprecated
-    public Authentication createAuthentication() {
-        RestAdapter mAdapter = new RestAdapter.Builder()
-                .setEndpoint(AUTHENTICATION)
-                .setLogLevel(RestAdapter.LogLevel.HEADERS)
-                .setErrorHandler(handlerError)
-                .setRequestInterceptor(getIn())
-                .setConverter(new StringConverter())
-                .build();
-
-        return mAdapter.create(Authentication.class);
     }
 
     public Authentication createAuthenticationHBX() {
@@ -189,7 +160,7 @@ public class HBStoreApiClient extends Client {
                 .setEndpoint(BASE_URL_STORE)
                 .setLogLevel(RestAdapter.LogLevel.HEADERS)
                 .setErrorHandler(handlerError)
-                .setRequestInterceptor(getIn())
+                .setRequestInterceptor(gatewayRequest())
                 .setConverter(new GsonConverter(gsonsetup))
                 .build();
 
@@ -208,17 +179,7 @@ public class HBStoreApiClient extends Client {
                 .setEndpoint(CONFIG_PATH)
                 .setLogLevel(RestAdapter.LogLevel.HEADERS)
                 .setErrorHandler(handlerError)
-                .setRequestInterceptor(
-                        new RequestInterceptor() {
-                            @Override
-                            public void intercept(RequestFacade request) {
-                                request.addHeader("User-Agent", get_USER_AGENT());
-                                request.addHeader("Accept", "application/json");
-                                request.addHeader("X-Api-Version", "2.0");
-                                request.addHeader("Cache-Control", "public, max-age=" + timeByMins(1));
-                            }
-                        }
-                )
+                .setRequestInterceptor(gatewayRequest())
                 .setConverter(new GsonConverter(gsonsetup))
                 .build();
 
@@ -259,31 +220,17 @@ public class HBStoreApiClient extends Client {
         }
     }
 
+    private apiInterceptor interterceptor;
+
     @Override
-    protected RequestInterceptor getIn() {
-        return new RequestInterceptor() {
-            @Override
-            public void intercept(RequestFacade request) {
-                request.addHeader("User-Agent", get_USER_AGENT());
-                request.addHeader("Accept", "application/json");
-                request.addHeader("X-Api-Version", "2.0");
-                //String cookietst = getCookieClient().getRaw();
-                //Log.d("loginHBX", "cookie set=" + cookietst);
-                if (!getCookieClient().getRaw().equalsIgnoreCase("")) {
-                    request.addHeader("Cookie", getCookieClient().getRaw());
-                }
-
-                request.addQueryParam("version", "2.1");
-
-                try {
-                    if (Connectivity.isConnected(context)) {
-                        request.addHeader("Cache-Control", "public, max-age=" + timeByMins(1));
-                    }
-                } catch (Exception e) {
-
-                }
-            }
-        };
+    protected RequestInterceptor gatewayRequest() {
+        if (interterceptor == null) {
+            interterceptor = new apiInterceptor();
+            interterceptor.setCacheMinutes(5);
+            interterceptor.setAPIVersion(API_VERSION);
+        }
+        interterceptor.setCookieClient(getCookieClient());
+        return interterceptor;
     }
 
     /**

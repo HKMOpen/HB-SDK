@@ -13,19 +13,18 @@ import com.hypebeast.sdk.Util.UrlCache;
 import com.hypebeast.sdk.api.gson.GsonFactory;
 import com.hypebeast.sdk.api.gson.MissingCharacterConversion;
 import com.hypebeast.sdk.api.gson.RealmExclusion;
-import com.hypebeast.sdk.api.gson.WordpressConversion;
 import com.hypebeast.sdk.api.model.hbeditorial.Foundation;
-import com.hypebeast.sdk.api.model.hbeditorial.ResponsePostW;
 import com.hypebeast.sdk.api.resources.hypebeast.feedhost;
 import com.hypebeast.sdk.api.resources.hypebeast.overhead;
 import com.hypebeast.sdk.application.hypebeast.ConfigurationSync;
 import com.hypebeast.sdk.application.hypebeast.DisqusComment;
 import com.hypebeast.sdk.application.hypebeast.syncBookmark;
+import com.hypebeast.sdk.clients.basic.Client;
+import com.hypebeast.sdk.clients.basic.apiInterceptor;
 
 import java.io.File;
 import java.io.IOException;
 
-import io.realm.RealmConfiguration;
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import retrofit.converter.GsonConverter;
@@ -45,18 +44,15 @@ public class HBEditorialClient extends Client {
     public static final String BASE_CN = "http://cn.hypebeast.com/";
     public static final String BASE_LOGIN = "https://disqus.com/api";
     private String endpoint;
-    /**
-     * User agent
-     */
-    private static final String USER_AGENT = "HypebeastStoreApp/1.0 Android" + Build.VERSION.SDK_INT;
+    private static final String API_VERSION = "2.2";
     /**
      * login adapter
      */
     private RestAdapter mLoginAdapter;
-
     private static HBEditorialClient static_instance;
     private syncBookmark bookmark_instance;
     private DisqusComment dis_comment_instance;
+
 
     @Deprecated
     public static HBEditorialClient newInstance() {
@@ -88,27 +84,15 @@ public class HBEditorialClient extends Client {
         dis_comment_instance = new DisqusComment(c);
     }
 
+    private apiInterceptor interterceptor;
 
     @Override
-    protected RequestInterceptor getIn() {
-        return new RequestInterceptor() {
-            @Override
-            public void intercept(RequestFacade request) {
-                request.addHeader("User-Agent", get_USER_AGENT());
-                request.addHeader("Accept", "application/json");
-                // request.addHeader("X-Api-Version", "2.0");
-                // request.addHeader("Cookie", getCookieClient().getRaw());
-                try {
-                    if (Connectivity.isConnected(context)) {
-                        request.addHeader("Cache-Control", "public, max-age=" + timeByMins(1));
-                    } else {
-                     //   request.addHeader("Cache-Control", "public, only-if-cached, max-stale=" + timeByWeeks(1));
-                    }
-                } catch (Exception e) {
-
-                }
-            }
-        };
+    protected RequestInterceptor gatewayRequest() {
+        if (interterceptor == null) {
+            interterceptor = new apiInterceptor();
+            interterceptor.setCacheMinutes(5);
+        }
+        return interterceptor;
     }
 
     public DisqusComment getDisqusComments() {
@@ -119,10 +103,6 @@ public class HBEditorialClient extends Client {
         return bookmark_instance;
     }
 
-    @Override
-    protected String get_USER_AGENT() {
-        return USER_AGENT;
-    }
 
     @Override
     protected void jsonCreate() {
@@ -158,7 +138,7 @@ public class HBEditorialClient extends Client {
                 .setEndpoint(endpoint)
                 .setLogLevel(RestAdapter.LogLevel.HEADERS)
                 .setErrorHandler(handlerError)
-                .setRequestInterceptor(getIn())
+                .setRequestInterceptor(gatewayRequest())
                 .setConverter(new GsonConverter(gsonsetup))
                 .build();
 
@@ -189,7 +169,7 @@ public class HBEditorialClient extends Client {
                 .setEndpoint(fullPath)
                 .setLogLevel(RestAdapter.LogLevel.HEADERS)
                 .setErrorHandler(handlerError)
-                .setRequestInterceptor(getIn())
+                .setRequestInterceptor(gatewayRequest())
                 .setConverter(new GsonConverter(gsonsetup))
                 .build();
 
@@ -211,7 +191,7 @@ public class HBEditorialClient extends Client {
                 .setEndpoint(full_path)
                 .setLogLevel(RestAdapter.LogLevel.HEADERS)
                 .setErrorHandler(handlerError)
-                .setRequestInterceptor(getIn())
+                .setRequestInterceptor(gatewayRequest())
                 .setConverter(new GsonConverter(gsonsetup))
                 .build();
         // buildCompletCacheRestAdapter(endpoint, context, RestAdapter.LogLevel.HEADERS);

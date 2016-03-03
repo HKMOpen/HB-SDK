@@ -1,4 +1,4 @@
-package com.hypebeast.sdk.clients;
+package com.hypebeast.sdk.clients.basic;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
@@ -41,23 +41,10 @@ public abstract class Client {
 
     protected abstract void registerAdapter();
 
-    protected abstract String get_USER_AGENT();
-
     protected abstract void jsonCreate();
 
     protected void createInterfaces() {
     }
-
-    protected RequestInterceptor getIn() {
-        return new RequestInterceptor() {
-            @Override
-            public void intercept(RequestFacade request) {
-                request.addHeader("User-Agent", get_USER_AGENT());
-                request.addHeader("Accept", "application/json");
-            }
-        };
-    }
-
 
     public Client(Context context) {
         cache_supported = false;
@@ -76,6 +63,7 @@ public abstract class Client {
         createInterfaces();
     }
 
+    protected abstract RequestInterceptor gatewayRequest();
 
     protected void buildCompletCacheRestAdapter(
             String base_end_point,
@@ -86,7 +74,7 @@ public abstract class Client {
                 .setEndpoint(base_end_point)
                 .setLogLevel(how_to_log == null ? RestAdapter.LogLevel.HEADERS : how_to_log)
                 .setErrorHandler(handlerError)
-                .setRequestInterceptor(getIn())
+                .setRequestInterceptor(gatewayRequest())
                 .setConverter(new GsonConverter(gsonsetup));
 
         try {
@@ -154,15 +142,5 @@ public abstract class Client {
         }
     }
 
-    // tolerate 4-weeks stale
-    public static int timeByWeeks(int d) {
-        int maxStale = 60 * 60 * 24 * 7 * d;
-        return maxStale;
-    }
 
-    // read from cache for 1 minute
-    public static int timeByMins(int m) {
-        int maxStale = 60 * m;
-        return maxStale;
-    }
 }

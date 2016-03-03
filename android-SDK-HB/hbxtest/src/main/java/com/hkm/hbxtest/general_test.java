@@ -39,7 +39,7 @@ public class general_test extends Fragment {
     }
 
     CircleProgressBar betterCircleBar;
-    Button login, addcart;
+    Button login, addcart, _template;
     TextView console;
     EditText pid, pqt;
     Handler mHandler = new Handler();
@@ -50,6 +50,7 @@ public class general_test extends Fragment {
         client = HBStoreApiClient.getInstance(getActivity());
         betterCircleBar = (CircleProgressBar) v.findViewById(com.hkm.ezwebview.R.id.wv_simple_process);
         addcart = (Button) v.findViewById(R.id.check_out_at_item);
+        _template = (Button) v.findViewById(R.id.template_show);
         login = (Button) v.findViewById(R.id.login_button);
         console = (TextView) v.findViewById(R.id.console);
         pid = (EditText) v.findViewById(R.id.console_product_id);
@@ -66,7 +67,13 @@ public class general_test extends Fragment {
 
     private void runbind() {
 
-
+        _template.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addMessage("===template found===");
+                addMessage(client.getTemplateHTML());
+            }
+        });
         addcart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
