@@ -473,4 +473,8 @@ public class HBStoreApiClient extends Client {
     public String getDomain() {
         return data.getFoundation().data.host;
     }
+
+    public String getTemplateHTML() {
+        return data.getFoundation().data.productdesc_html_template;
+    }
 }
