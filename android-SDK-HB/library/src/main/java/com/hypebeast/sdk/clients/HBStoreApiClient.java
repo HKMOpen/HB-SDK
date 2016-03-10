@@ -24,6 +24,7 @@ import com.hypebeast.sdk.api.resources.hbstore.Brand;
 import com.hypebeast.sdk.api.resources.hbstore.Overhead;
 import com.hypebeast.sdk.api.resources.hbstore.Products;
 import com.hypebeast.sdk.api.resources.hbstore.SingleProduct;
+import com.hypebeast.sdk.application.ApplicationBase;
 import com.hypebeast.sdk.application.hbx.ConfigurationSync;
 import com.hypebeast.sdk.application.hbx.WishlistSync;
 import com.hypebeast.sdk.clients.basic.Client;
@@ -127,7 +128,7 @@ public class HBStoreApiClient extends Client {
         gsonsetup = new GsonBuilder()
                 .setDateFormat(Constants.DATE_FORMAT)
                 .registerTypeAdapterFactory(new GsonFactory.NullStringToEmptyAdapterFactory())
-                //.registerTypeAdapter(String.class, new WordpressConversion())
+                        //.registerTypeAdapter(String.class, new WordpressConversion())
                 .setExclusionStrategies(new RealmExclusion())
                 .create();
     }
@@ -224,13 +225,29 @@ public class HBStoreApiClient extends Client {
 
     @Override
     protected RequestInterceptor gatewayRequest() {
+        //initially checking
         if (interterceptor == null) {
             interterceptor = new apiInterceptor();
             interterceptor.setCacheMinutes(5);
             interterceptor.setAPIVersion(API_VERSION);
         }
+        //constantly checking
+        if (getCountryCode() != null) {
+            interterceptor.setCountryCode(getCountryCode());
+        }
         interterceptor.setCookieClient(getCookieClient());
         return interterceptor;
+    }
+
+    public void setCountryCode(String code) {
+        if (data == null) return;
+        data.saveCountryCode(code);
+    }
+
+    public String getCountryCode() {
+        if (data == null) return null;
+        if (data.loadCountryCode().equalsIgnoreCase(ApplicationBase.EMPTY_FIELD)) return null;
+        return data.loadCountryCode();
     }
 
     /**

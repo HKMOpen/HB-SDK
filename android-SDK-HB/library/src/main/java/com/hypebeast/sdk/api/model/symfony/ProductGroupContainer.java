@@ -10,6 +10,4 @@ public class ProductGroupContainer {
     public String href;
     @SerializedName("title")
     public String title;
-
-
 }

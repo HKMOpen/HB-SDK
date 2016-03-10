@@ -61,11 +61,9 @@ public abstract class ApplicationBase {
     }
 
     protected String loadRef(final String tag) {
-        String data = sharedPreferences.getString(tag, EMPTY_FIELD);
-        if (data.equalsIgnoreCase("")) {
-            return EMPTY_FIELD;
-        } else
-            return data;
+        boolean isempty = sharedPreferences.getString(tag, EMPTY_FIELD).equalsIgnoreCase("");
+        if (isempty) return EMPTY_FIELD;
+        else return sharedPreferences.getString(tag, EMPTY_FIELD);
     }
 
     protected void saveInfo(final String tag, final String data) {

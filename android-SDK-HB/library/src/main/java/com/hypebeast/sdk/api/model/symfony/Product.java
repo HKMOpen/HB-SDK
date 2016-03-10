@@ -39,7 +39,7 @@ public class Product {
     @SerializedName("images")
     public List<Image> images = new ArrayList<Image>();
     @SerializedName("variants")
-    private List<Variant> variants = new ArrayList<Variant>();
+    public List<Variant> variants = new ArrayList<Variant>();
     @SerializedName("attributes")
     private List<Attributes> attributes = new ArrayList<Attributes>();
 
@@ -124,14 +124,24 @@ public class Product {
         return _links.self.href.equalsIgnoreCase(url);
     }
 
-    public ArrayList<Variant> getMappedVariants() throws Exception {
-        if (!hasVariance()) throw new Exception("variance not found");
-        ArrayList<Variant> h = new ArrayList<Variant>();
-        for (int i = 1; i < variants.size(); i++) {
-            Variant m = variants.get(i).init();
-            h.add(m);
-        }
-        return h;
+    /**
+     * @param selected selection
+     * @return the variant object
+     * @throws Exception the error
+     */
+    public Variant getVariantBySelection(final int selected) throws Exception {
+        if (!hasVariance()) return getMasterVariant();
+        return variants.get(selected + 1).init();
+    }
+
+    /**
+     * @param selected selection
+     * @return the Id
+     * @throws Exception error
+     */
+    public long getVariantIdBySelection(int selected) throws Exception {
+        if (!hasVariance()) throw new Exception("there is no variant available");
+        return variants.get(selected + 1).getId();
     }
 
     public long getMasterVariantId() throws Exception {
@@ -152,14 +162,5 @@ public class Product {
         return _links.group_products;
     }
 
-    /**
-     * n can only be bigger than 1
-     * n greater than 1
-     *
-     * @param n the input integer
-     * @return the integer number.
-     */
-    public long getVariantID(int n) {
-        return variants.get(n).getId();
-    }
+
 }

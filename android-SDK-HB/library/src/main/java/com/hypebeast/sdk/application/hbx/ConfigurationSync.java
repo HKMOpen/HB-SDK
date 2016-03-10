@@ -39,6 +39,7 @@ public class ConfigurationSync extends ApplicationBase {
     public static final String ACCOUNT_SIG = "hbx_PHPSYLIUSID";
     public static final String ACCOUNT_USER = "hbx_username";
     public static final String ACCOUNT_PASS = "hbx_password";
+    public static final String USER_COUNTRY_CODE = "country_code_use";
     private String error_messages;
     private Overhead mOverheadRequest;
     private ResponseMobileOverhead mFoundation;
@@ -305,6 +306,14 @@ public class ConfigurationSync extends ApplicationBase {
 
     private void triggerFatalError(final String error_messages) {
         if (mListener != null) mListener.error(error_messages);
+    }
+
+    public void saveCountryCode(String code) {
+        saveInfo(USER_COUNTRY_CODE, code);
+    }
+
+    public String loadCountryCode() {
+        return loadRef(USER_COUNTRY_CODE);
     }
 
     class threadWork extends AsyncTask<Void, Void, Void> {
