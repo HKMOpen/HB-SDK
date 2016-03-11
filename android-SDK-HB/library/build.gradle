@@ -1,5 +1,6 @@
 apply plugin: 'com.android.library'
-//apply plugin: 'com.neenbedankt.android-apt'
+//apply plugin: 'realm-android'
+
 android {
     compileSdkVersion project.ANDROID_BUILD_SDK_VERSION as int
     buildToolsVersion project.ANDROID_BUILD_TOOLS_VERSION
@@ -20,9 +21,12 @@ android {
         abortOnError false
     }
 }
+
+
 repositories {
     jcenter()
-    maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+    //maven { url 'https://jitpack.io' }
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
     maven { url 'http://oss.jfrog.org/artifactory/oss-snapshot-local' }
     maven { url 'http://dl.bintray.com/jjhesk/maven/' }
 }

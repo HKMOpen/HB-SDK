@@ -10,4 +10,8 @@ public class ProductGroupContainer {
     public String href;
     @SerializedName("title")
     public String title;
+    @SerializedName("display_color")
+    public String color;
+    @SerializedName("id")
+    public long rel_product_id;
 }

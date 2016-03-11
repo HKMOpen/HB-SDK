@@ -57,7 +57,7 @@ public class HBStoreApiClient extends Client {
     private static final String BASE_LOGIN = "https://disqus.com/api";
 
     private static final String CONFIG_PATH = "https://hbx.com/mobile-api/v1/config.json";
-    private static final String API_VERSION = "2.1";
+    private static final String API_VERSION = "2.2";
     /**
      * login adapter
      */
@@ -242,6 +242,7 @@ public class HBStoreApiClient extends Client {
     public void setCountryCode(String code) {
         if (data == null) return;
         data.saveCountryCode(code);
+        registerAdapter();
     }
 
     public String getCountryCode() {
