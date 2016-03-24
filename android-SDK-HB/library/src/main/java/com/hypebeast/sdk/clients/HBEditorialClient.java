@@ -227,4 +227,14 @@ public class HBEditorialClient extends Client {
         }
     }
 
+    public String getSavedTemplate() {
+        try {
+            final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+            return sharedPreferences.getString(ConfigurationSync.TEMPLATE_FILE_HTML, "");
+        } catch (NullPointerException e) {
+            return "en";
+        }
+    }
+
+
 }

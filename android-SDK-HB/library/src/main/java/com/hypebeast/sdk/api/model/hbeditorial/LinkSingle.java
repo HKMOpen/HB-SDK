@@ -13,8 +13,10 @@ public class LinkSingle {
     public href self;
     @SerializedName("thumbnail")
     public href thumbnail;
-    @SerializedName("shorthen_url")
+    @SerializedName("shorten_url")
     public href short_url;
+    @SerializedName("source")
+    public href src;
     @SerializedName("categories")
     public List<href> categories;
     @SerializedName("tags")

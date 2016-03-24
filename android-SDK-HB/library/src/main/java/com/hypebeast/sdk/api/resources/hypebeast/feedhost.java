@@ -19,11 +19,41 @@ import retrofit.http.Query;
 public interface feedhost {
 
 
+    /**
+     * @param page_number   page number
+     * @param post_per_page limit by request and the max is 30
+     * @param cb            callback
+     * @throws ApiException error
+     */
+    @GET("/page/{page_no}")
+    void the_recent_page(
+            final @Path("page_no") int page_number,
+            final @Query("limit") int post_per_page,
+            final Callback<ResponsePostW> cb
+    ) throws ApiException;
+
+    /**
+     * assume the limit is 10
+     *
+     * @param page_number page number
+     * @param cb          callback
+     * @throws ApiException error
+     */
     @GET("/page/{page_no}")
     void the_recent_page(
             final @Path("page_no") int page_number,
             final Callback<ResponsePostW> cb
     ) throws ApiException;
+
+
+    @GET("/{cate_name}/page/{page_no}")
+    void cate_list(
+            final @Path("page_no") int pagepage_number_no,
+            final @Query("limit") int post_per_page,
+            final @Path("cate_name") String tag_keyword,
+            final Callback<ResponsePostW> cb
+    ) throws ApiException;
+
 
     @GET("/{cate_name}/page/{page_no}")
     void cate_list(
@@ -32,6 +62,17 @@ public interface feedhost {
             final Callback<ResponsePostW> cb
     ) throws ApiException;
 
+
+
+    @GET("/tags/{tag_text}/page/{page_no}")
+    void tag_list(
+            final @Path("page_no") int pagepage_number_no,
+            final @Query("limit") int post_per_page,
+            final @Path("tag_text") String tag_keyword,
+            final Callback<ResponsePostW> cb
+    ) throws ApiException;
+
+
     @GET("/tags/{tag_text}/page/{page_no}")
     void tag_list(
             final @Path("page_no") int pagepage_number_no,
@@ -39,22 +80,38 @@ public interface feedhost {
             final Callback<ResponsePostW> cb
     ) throws ApiException;
 
+
+    @GET("/search/page/{page_no}")
+    void search(
+            final @Query("s") String search_keyword,
+            final @Query("limit") int post_per_page,
+            final @Path("page_no") int page_number,
+            final Callback<ResponsePostFromSearch> cb) throws ApiException;
+
     @GET("/search/page/{page_no}")
     void search(
             final @Query("s") String search_keyword,
             final @Path("page_no") int page_number,
             final Callback<ResponsePostFromSearch> cb) throws ApiException;
 
+
+    @GET("/page/{page_no}")
+    void atPage(
+            final @Path("page_no") int page_number,
+            final @Query("limit") int post_per_page,
+            final Callback<ResponsePostW> cb
+    ) throws ApiException;
+
     /**
      * adding additional page number to call the pagination API
      *
-     * @param pagepage_number_no the index of the page number
-     * @param cb                 the call back only
+     * @param page_number the index of the page number
+     * @param cb          the call back only
      * @throws ApiException n
      */
     @GET("/page/{page_no}")
     void atPage(
-            final @Path("page_no") int pagepage_number_no,
+            final @Path("page_no") int page_number,
             final Callback<ResponsePostW> cb
     ) throws ApiException;
 
@@ -71,6 +128,19 @@ public interface feedhost {
             final Callback<ResponseSingle> cb
     ) throws ApiException;
 
+
+    /**
+     * get the list of items
+     *
+     * @param post_per_page page per limit
+     * @param cb            callback
+     * @throws ApiException error
+     */
+    @GET("/")
+    void getList(
+            final @Query("limit") int post_per_page,
+            final Callback<ResponsePostW> cb
+    ) throws ApiException;
 
     /**
      * retrieve a list of post articles with the data continue from the full path calls

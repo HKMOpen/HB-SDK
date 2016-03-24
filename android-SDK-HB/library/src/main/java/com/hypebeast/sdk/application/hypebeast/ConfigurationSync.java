@@ -3,6 +3,7 @@ package com.hypebeast.sdk.application.hypebeast;
 import android.app.Application;
 
 import com.hypebeast.sdk.Constants;
+import com.hypebeast.sdk.Util.Connectivity;
 import com.hypebeast.sdk.api.exception.ApiException;
 import com.hypebeast.sdk.api.model.hbeditorial.Foundation;
 import com.hypebeast.sdk.api.model.hbeditorial.HBmobileConfig;
@@ -31,7 +32,7 @@ public class ConfigurationSync extends ApplicationBase {
     public static ConfigurationSync instance;
     public static final String local_css_file_name = "hb.css";
     private static final String ACCESS_FILE_URL = "http://hypebeast.com/bundles/hypebeasteditorial/app/main.css";
-
+    public static final String TEMPLATE_FILE_HTML = "templ.fl.html";
     private overhead clientRequest;
     private Foundation mFoundation;
     private HBEditorialClient client;
@@ -123,7 +124,6 @@ public class ConfigurationSync extends ApplicationBase {
     }
 
 
-
     private void complete_second_stage() {
         if (mListener != null) {
             if (!isFailure) {
@@ -144,6 +144,7 @@ public class ConfigurationSync extends ApplicationBase {
                 @Override
                 public void success(Foundation foundation, Response response) {
                     mFoundation = foundation;
+                    saveInfo(TEMPLATE_FILE_HTML, mFoundation.english.html_base);
                     saveInfo(PREFERENCE_FOUNDATION_FILE_CONTENT, client.fromJsonToString(foundation));
                     Date date = new Date();
                     Timestamp timestamp = new Timestamp(date.getTime());
@@ -227,21 +228,19 @@ public class ConfigurationSync extends ApplicationBase {
         String data = loadRef(PREFERENCE_FOUNDATION_FILE_CONTENT);
         String time = loadRef(PREFERENCE_FOUNDATION_REGISTRATION);
         if (!data.equalsIgnoreCase(EMPTY_FIELD) && !time.equalsIgnoreCase(EMPTY_FIELD)) {
-            Timestamp past = Timestamp.valueOf(time);
-            Date date = new Date();
-            //   Calendar cal1 = Calendar.getInstance();
-            Timestamp now = new Timestamp(date.getTime());
-            long pastms = past.getTime();
-            long nowms = now.getTime();
-            if (nowms - pastms > Constants.ONE_DAY) {
+            final Timestamp past = Timestamp.valueOf(time);
+            final Date date = new Date();
+            final Timestamp now = new Timestamp(date.getTime());
+            final long pastms = past.getTime();
+            final long nowms = now.getTime();
+            final boolean expired = nowms - pastms > Constants.ONE_DAY;
+            final boolean connected = Connectivity.isConnected(app);
+            final boolean emptydata = data.isEmpty();
+            if (expired || connected || emptydata) {
                 syncWorkerThread();
             } else {
-                if (data.equalsIgnoreCase("")) {
-                    syncWorkerThread();
-                } else {
-                    mFoundation = client.fromsavedConfiguration(data);
-                    complete_first_stage();
-                }
+                mFoundation = client.fromsavedConfiguration(data);
+                complete_first_stage();
             }
         } else if (data.equalsIgnoreCase(EMPTY_FIELD) || time.equalsIgnoreCase(EMPTY_FIELD)) {
             syncWorkerThread();

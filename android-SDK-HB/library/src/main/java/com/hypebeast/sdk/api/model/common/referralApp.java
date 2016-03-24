@@ -12,8 +12,6 @@ public class referralApp {
     public String icon_image;
     @SerializedName("description")
     public String desc;
-    @SerializedName("app_store_link")
-    public String link_appstore;
-    @SerializedName("play_store_link")
-    public String link_playstore;
+    @SerializedName("android_app_id")
+    public String package_name;
 }

@@ -10,13 +10,19 @@ import java.util.ArrayList;
  * Created by hesk on 1/9/15.
  */
 public class HBmobileConfig {
-    @SerializedName("base")
-    public String base;
 
 
     @SerializedName("splash_screen")
     public splash splash_screen;
 
+    @SerializedName("base")
+    public String base;
+
+    @SerializedName("ad_per_post")
+    public int ad_per_post;
+
+    @SerializedName("ad_minimum_reload_time")
+    public int ad_min_reload_time;
 
     /**
      * deprecated since v2.1
@@ -37,20 +43,16 @@ public class HBmobileConfig {
     public ArrayList<Menuitem> nav_bar;
 
 
-
     @SerializedName("other_apps")
     public ArrayList<referralApp> applist;
-
 
 
     @SerializedName("about")
     public ArrayList<about> aboutlist;
 
 
-
     @SerializedName("featurebanner")
     public ArrayList<Slide> featurebanner;
-
 
 
     @SerializedName("main_feature_banner")
