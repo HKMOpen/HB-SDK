@@ -94,7 +94,7 @@ public class PBEditorialClient extends Client {
                 .setExclusionStrategies(new RealmExclusion())
                 .registerTypeAdapterFactory(new GsonFactory.NullStringToEmptyAdapterFactory())
                         //  .registerTypeAdapter(String.class, new MissingCharacterConversion())
-                .registerTypeAdapter(String.class, new WordpressConversion())
+                        // .registerTypeAdapter(String.class, new WordpressConversion())
                 .create();
     }
 
