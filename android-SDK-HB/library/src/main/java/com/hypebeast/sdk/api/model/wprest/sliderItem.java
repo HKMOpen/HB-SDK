@@ -15,11 +15,22 @@ public class sliderItem {
     @SerializedName("text")
     public String description;
 
+    @SerializedName("title")
+    public String mTitle;
+
     @SerializedName("image")
     public String image;
 
     @SerializedName("url")
     public String url;
+
+    /**
+     * false: open the browser
+     * true: continue the json reading.
+     * popbee in use
+     */
+    @SerializedName("open_in_app")
+    public boolean open;
 
     @SerializedName("text_color")
     private String textcolorconfiguration;

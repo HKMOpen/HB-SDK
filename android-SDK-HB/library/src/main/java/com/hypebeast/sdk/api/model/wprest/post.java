@@ -21,6 +21,9 @@ public class post {
     public String htmlcontent;
     @SerializedName("title")
     public String title;
+    /**
+     * from popbee specific when {open_in_app == false}
+     */
     @SerializedName("link")
     public String finalenpoint;
     @SerializedName("slug")

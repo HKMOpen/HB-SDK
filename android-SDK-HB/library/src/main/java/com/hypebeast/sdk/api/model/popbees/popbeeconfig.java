@@ -18,4 +18,11 @@ public class popbeeconfig {
     public List<String> gallery;
     @SerializedName("video_source")
     public String video_embeded_src;
+
+    /**
+     * false: open the browser
+     * true: continue the json reading.
+     */
+    @SerializedName("open_in_app")
+    public boolean open;
 }
