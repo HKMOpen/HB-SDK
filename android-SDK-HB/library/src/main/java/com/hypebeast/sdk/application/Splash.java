@@ -83,13 +83,12 @@ public abstract class Splash extends AppCompatActivity {
                 Manifest.permission.ACCESS_NETWORK_STATE,
                 Manifest.permission.RECEIVE_BOOT_COMPLETED,
                 Manifest.permission.VIBRATE,
-                Manifest.permission.GET_ACCOUNTS,
                 Manifest.permission.WAKE_LOCK
         );
     }
 
     protected String permission_message() {
-        return "You need to grant those permissions";
+        return "Some cached loaded images will need to be stored in your device to achieve better user experience. Please grant permission and try again.";
     }
 
     @Override
