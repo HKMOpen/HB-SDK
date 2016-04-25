@@ -51,8 +51,6 @@ public class MainActivity extends Splash {
 
     @Override
     protected void synchronizeData() {
-
-
         PopbeeMainApp.with(getApplication(), new sync() {
             @Override
             public void syncDone(PopbeeMainApp self, String data) {
@@ -77,6 +75,5 @@ public class MainActivity extends Splash {
                 });
             }
         });
-
     }
 }

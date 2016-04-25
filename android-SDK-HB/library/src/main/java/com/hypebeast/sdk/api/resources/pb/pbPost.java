@@ -79,5 +79,7 @@ public interface pbPost {
     @GET("/wp-json/mobile-config")
     void mobile_config(final Callback<PBmobileConfig> cb) throws ApiException;
 
+    @GET("/wp-json/mobile-config")
+    PBmobileConfig mobile_config() throws ApiException;
 
 }

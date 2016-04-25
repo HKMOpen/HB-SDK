@@ -3,6 +3,9 @@ package com.hypebeast.sdk.application.popbee;
 import android.app.Application;
 
 import com.hypebeast.sdk.Util.CacheManager;
+import com.hypebeast.sdk.api.exception.ApiException;
+import com.hypebeast.sdk.api.model.popbees.PBmobileConfig;
+import com.hypebeast.sdk.api.resources.pb.pbPost;
 import com.hypebeast.sdk.application.ApplicationBase;
 import com.hypebeast.sdk.clients.PBEditorialClient;
 
@@ -11,6 +14,9 @@ import java.util.ArrayList;
 import bolts.CancellationTokenSource;
 import bolts.Continuation;
 import bolts.Task;
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 
 import static com.hypebeast.sdk.Constants.*;
 
@@ -23,8 +29,10 @@ public class PopbeeMainApp extends ApplicationBase {
     public static final String local_css_file_name = "pb.css";
 
     private PBEditorialClient client;
+    private pbPost postrequest;
     public static PopbeeMainApp instance;
     private com.hypebeast.sdk.application.popbee.sync mListener;
+    private PBmobileConfig configuration;
 
     public static PopbeeMainApp with(Application app, sync mListener) {
         if (instance == null) {
@@ -49,6 +57,7 @@ public class PopbeeMainApp extends ApplicationBase {
     public PopbeeMainApp(Application app, sync mListener) {
         super(app);
         client = PBEditorialClient.getInstance(app);
+        postrequest = client.createPostsFeed();
         //client.setLanguageBase(HBEditorialClient.BASE_EN);
         //mOverheadRequest = client.createOverHead();
         //request_login = client.createAuthenticationHBX();
@@ -69,15 +78,39 @@ public class PopbeeMainApp extends ApplicationBase {
                 tasks.add(setCssFile(ACCESS_FILE_URL, local_css_file_name));
                 return Task.whenAll(tasks);
             }
+        }).continueWithTask(new Continuation<Void, Task<Void>>() {
+            @Override
+            public Task<Void> then(Task<Void> task) throws Exception {
+                if (configuration == null) {
+                    configuration = postrequest.mobile_config();
+                }
+                return null;
+            }
+        }).continueWithTask(new Continuation<Void, Task<Void>>() {
+            @Override
+            public Task<Void> then(Task<Void> task) throws Exception {
+                if (task.isFaulted()) {
+                    mListener.error(task.getError().getMessage());
+                    throw new ApiException("not found");
+                }
+                return null;
+            }
         }).onSuccess(new Continuation<Void, Void>() {
             @Override
-            public Void then(Task<Void> ignored) throws Exception {
+            public Void then(Task<Void> task) throws Exception {
                 // Every comment was deleted.
-                mListener.syncDone(PopbeeMainApp.this, "done");
+                if (task.isFaulted()) {
+                    mListener.error(task.getError().getMessage());
+                } else {
+                    mListener.syncDone(PopbeeMainApp.this, "done");
+                }
                 return null;
             }
         });
+    }
 
+    public PBmobileConfig getConfiguration() {
+        return configuration;
     }
 
     @Override
@@ -88,8 +121,4 @@ public class PopbeeMainApp extends ApplicationBase {
         saveInfo(PREFERENCE_FOUNDATION_REGISTRATION, "");
         client.removeAllCache();
     }
-
-
-
-
 }
