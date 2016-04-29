@@ -29,6 +29,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile supportDependencies.appCompat
     compile supportDependencies.design
-    compile 'com.hkm.ezwebview:library:1.2.0'
+    compile supportDependencies.webview
+
     compile project(':library')
 }

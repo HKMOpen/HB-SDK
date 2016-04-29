@@ -18,7 +18,8 @@ public class popbeeconfig {
     public List<String> gallery;
     @SerializedName("video_source")
     public String video_embeded_src;
-
+    @SerializedName("thumbnail")
+    public String thumbnail_600;
     /**
      * false: open the browser
      * true: continue the json reading.

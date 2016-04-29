@@ -63,10 +63,14 @@ repositories {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.1.1'
+
+    compile supportDependencies.appCompat
+    compile supportDependencies.webview
+    compile supportDependencies.slide
+
+
     debugCompile 'me.drakeet.library:crashwoodpecker:0.9.7'
     releaseCompile 'me.drakeet.library:crashwoodpecker-do-nothing:0.9.7'
-    compile 'com.hkm.loyalslider:library:1.5.0'
-    compile 'com.hkm.ezwebview:library:1.2.6'
+
     compile project(':library')
 }

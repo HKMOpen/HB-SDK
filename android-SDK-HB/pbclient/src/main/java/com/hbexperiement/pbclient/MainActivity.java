@@ -12,25 +12,35 @@ import com.hypebeast.sdk.application.popbee.PopbeeMainApp;
 import com.hypebeast.sdk.application.popbee.sync;
 
 public class MainActivity extends Splash {
-    @Override
+  /*  @Override
     protected void V23permission_request() {
         Permiso.getInstance().requestPermissions(
                 getPermProcess(),
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.INTERNET,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
+                //Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.INTERNET
+               // Manifest.permission.WRITE_EXTERNAL_STORAGE
         );
-    }
+    }*/
 
 
     @Override
     protected void onPermissionGranted() {
-        synchronizeData();
+        ErrorMessage.alert("Permission granted", getFragmentManager(), new Runnable() {
+            @Override
+            public void run() {
+                synchronizeData();
+            }
+        });
     }
 
     @Override
     protected void onPermissionDenied() {
-        finish();
+        ErrorMessage.alert("Permission denied", getFragmentManager(), new Runnable() {
+            @Override
+            public void run() {
+                synchronizeData();
+            }
+        });
     }
 
 

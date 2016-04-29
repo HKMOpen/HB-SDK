@@ -18,6 +18,8 @@ import com.hypebeast.sdk.clients.HBStoreApiClient;
 
 import net.sjava.advancedasynctask.AdvancedAsyncTask;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -33,6 +35,8 @@ import retrofit.client.Response;
 /**
  * Created by hesk on 10/12/15.
  */
+
+
 public class WishlistSync {
     private static final int LIMIT = 10;
     private int totalpages = 1;

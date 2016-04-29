@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import bolts.CancellationTokenSource;
 import bolts.Continuation;
 import bolts.Task;
+import bolts.TaskCompletionSource;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -57,7 +58,6 @@ public class PopbeeMainApp extends ApplicationBase {
     public PopbeeMainApp(Application app, sync mListener) {
         super(app);
         client = PBEditorialClient.getInstance(app);
-        postrequest = client.createPostsFeed();
         //client.setLanguageBase(HBEditorialClient.BASE_EN);
         //mOverheadRequest = client.createOverHead();
         //request_login = client.createAuthenticationHBX();
@@ -68,45 +68,84 @@ public class PopbeeMainApp extends ApplicationBase {
         mListener = listenerSync;
     }
 
+    private Task<Void> checkconfigurationoverhead() {
+        TaskCompletionSource<Void> tks = new TaskCompletionSource<>();
+        if (configuration == null) {
+            try {
+                postrequest = client.createPostsFeed();
+                configuration = postrequest.mobile_config();
+                tks.setResult(null);
+            } catch (ApiException e) {
+                tks.setError(e);
+            }
+        } else {
+            tks.setError(new Exception("configuration is defined."));
+        }
+        return tks.getTask();
+    }
+
     protected void init() {
         super.init();
         CancellationTokenSource cts = new CancellationTokenSource();
-        getIntAsync(cts.getToken()).continueWithTask(new Continuation<String, Task<Void>>() {
-            @Override
-            public Task<Void> then(Task<String> task) throws Exception {
-                ArrayList<Task<Void>> tasks = new ArrayList<Task<Void>>();
-                tasks.add(setCssFile(ACCESS_FILE_URL, local_css_file_name));
-                return Task.whenAll(tasks);
-            }
-        }).continueWithTask(new Continuation<Void, Task<Void>>() {
-            @Override
-            public Task<Void> then(Task<Void> task) throws Exception {
+        getIntAsync(cts.getToken())
+
+
+                /**
+                 *   adding task
+                 *
+                 */
+
+
+                .continueWithTask(new Continuation<String, Task<Void>>() {
+                    @Override
+                    public Task<Void> then(Task<String> task) throws Exception {
+                        ArrayList<Task<Void>> tasks = new ArrayList<Task<Void>>();
+                        tasks.add(checkconfigurationoverhead());
+                        //tasks.add(setCssFile(ACCESS_FILE_URL, local_css_file_name));
+                        return Task.whenAll(tasks);
+                    }
+                })
+
+                /**
+                 .continueWithTask(new Continuation<Void, Task<Void>>() {
+                @Override public Task<Void> then(Task<Void> task) throws Exception {
                 if (configuration == null) {
-                    configuration = postrequest.mobile_config();
+                configuration = postrequest.mobile_config();
                 }
                 return null;
-            }
-        }).continueWithTask(new Continuation<Void, Task<Void>>() {
-            @Override
-            public Task<Void> then(Task<Void> task) throws Exception {
-                if (task.isFaulted()) {
-                    mListener.error(task.getError().getMessage());
-                    throw new ApiException("not found");
                 }
-                return null;
-            }
-        }).onSuccess(new Continuation<Void, Void>() {
-            @Override
-            public Void then(Task<Void> task) throws Exception {
-                // Every comment was deleted.
-                if (task.isFaulted()) {
-                    mListener.error(task.getError().getMessage());
-                } else {
-                    mListener.syncDone(PopbeeMainApp.this, "done");
-                }
-                return null;
-            }
-        });
+                })*/
+
+
+              /*  .continueWithTask(new Continuation<Void, Task<Void>>() {
+                    @Override
+                    public Task<Void> then(Task<Void> task) throws Exception {
+                        if (task.isFaulted()) {
+                            mListener.error(task.getError().getMessage());
+                            throw new ApiException("not found");
+                        }
+                        return null;
+                    }
+                })
+*/
+
+                /**
+                 *
+                 *
+                 */
+
+                .onSuccess(new Continuation<Void, Void>() {
+                    @Override
+                    public Void then(Task<Void> task) throws Exception {
+                        // Every comment was deleted.
+                        if (task.isFaulted()) {
+                            mListener.error(task.getError().getMessage());
+                        } else {
+                            mListener.syncDone(PopbeeMainApp.this, "done");
+                        }
+                        return null;
+                    }
+                });
     }
 
     public PBmobileConfig getConfiguration() {
@@ -119,6 +158,7 @@ public class PopbeeMainApp extends ApplicationBase {
         saveInfo(PREFERENCE_FOUNDATION_FILE_CONTENT, "");
         saveInfo(PREFERENCE_BRAND_LIST, "");
         saveInfo(PREFERENCE_FOUNDATION_REGISTRATION, "");
+        if(client==null)return;
         client.removeAllCache();
     }
 }

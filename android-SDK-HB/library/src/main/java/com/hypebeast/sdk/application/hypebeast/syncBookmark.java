@@ -14,6 +14,8 @@ import com.hypebeast.sdk.api.realm.editorial.articlebookmark;
 import com.hypebeast.sdk.clients.HBEditorialClient;
 import com.hypebeast.sdk.clients.HBStoreApiClient;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
 import io.realm.Realm;
@@ -27,6 +29,7 @@ import retrofit.client.Response;
 /**
  * Created by hesk on 18/12/15.
  */
+
 public class syncBookmark {
     private Context context;
     public static final int

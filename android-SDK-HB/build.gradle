@@ -36,7 +36,10 @@ ext {
             recycler  : "com.android.support:recyclerview-v7:${SUPPORT_LIBRARY}",
             design    : "com.android.support:design:${SUPPORT_LIBRARY}",
             cardView  : "com.android.support:cardview-v7:${SUPPORT_LIBRARY}",
-            kitCore   : "com.52inc:52Kit-core:${ftKit}"
+            //      kitCore   : "com.52inc:52Kit-core:${ftKit}"
+
+            slide     : 'com.hkm.loyalslider:library:1.8.5'      ,
+            webview   : 'com.hkm.ezwebview:ezwebviewv:1.3.6'
     ]
 
 }

@@ -53,7 +53,6 @@ public abstract class ApplicationBase {
     public ApplicationBase(Application app) {
         this.app = app;
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(app);
-
     }
 
     protected void init() {
@@ -197,6 +196,8 @@ public abstract class ApplicationBase {
         final File myDir = new File(path_final);
         UrlCache mUrlCache = new UrlCache(app, myDir);
         mUrlCache.register(access_endpoint, local_css_name, "text/css", "UTF-8", 5 * UrlCache.ONE_DAY);
+
+
         //  SharedPreferences share = PreferenceManager.getDefaultSharedPreferences(app);
         if (loadRef(APP_CSS_FILE_PATH).equalsIgnoreCase(EMPTY_FIELD)) {
             WebResourceResponse loadedcontent = mUrlCache.load();

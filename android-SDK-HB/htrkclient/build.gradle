@@ -65,7 +65,7 @@ dependencies {
     compile supportDependencies.appCompat
     debugCompile 'me.drakeet.library:crashwoodpecker:0.9.7'
     releaseCompile 'me.drakeet.library:crashwoodpecker-do-nothing:0.9.7'
-    compile 'com.hkm.loyalslider:library:1.5.0'
-    compile 'com.hkm.ezwebview:library:1.2.6'
+    compile supportDependencies.webview
+    compile supportDependencies.slide
     compile project(':library')
 }

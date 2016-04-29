@@ -20,11 +20,11 @@ public abstract class Splash extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.setContentView(getLayoutId());
-        Permiso.getInstance().setActivity(this);
         mhandle.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    Permiso.getInstance().setActivity(Splash.this);
                     V23permission_request();
                 } else {
                     synchronizeData();
@@ -77,12 +77,12 @@ public abstract class Splash extends AppCompatActivity {
     protected void V23permission_request() {
         Permiso.getInstance().requestPermissions(
                 getPermProcess(),
-                Manifest.permission.READ_EXTERNAL_STORAGE,
+                //Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.INTERNET,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                //Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.ACCESS_NETWORK_STATE,
                 Manifest.permission.RECEIVE_BOOT_COMPLETED,
-                Manifest.permission.VIBRATE,
+                //Manifest.permission.VIBRATE,
                 Manifest.permission.WAKE_LOCK
         );
     }
