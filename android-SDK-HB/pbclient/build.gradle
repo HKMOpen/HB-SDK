@@ -50,8 +50,6 @@ android {
             signingConfig signingConfigs.nativehome
             buildConfigField "String", "CUSTOM_MENU", "\"${configConstants.CUSTOM_MENU}\""
         }
-
-
     }
 }
 repositories {

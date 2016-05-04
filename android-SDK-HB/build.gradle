@@ -4,15 +4,15 @@ buildscript {
     repositories {
         jcenter()
         mavenCentral()
-
+        maven {
+            url 'http://oss.jfrog.org/artifactory/oss-snapshot-local'
+        }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:2.0.0'
         classpath 'com.novoda:bintray-release:0.3.4'
-        classpath "io.realm:realm-gradle-plugin:0.88.3"
-
+        classpath 'io.realm:realm-gradle-plugin:0.89.1'
         //classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
-        //classpath 'io.realm:realm-gradle-plugin:0.88.0'
     }
 }
 
@@ -21,6 +21,9 @@ allprojects {
     repositories {
         jcenter()
         mavenCentral()
+        maven {
+            url 'http://oss.jfrog.org/artifactory/oss-snapshot-local'
+        }
     }
 }
 
@@ -36,9 +39,7 @@ ext {
             recycler  : "com.android.support:recyclerview-v7:${SUPPORT_LIBRARY}",
             design    : "com.android.support:design:${SUPPORT_LIBRARY}",
             cardView  : "com.android.support:cardview-v7:${SUPPORT_LIBRARY}",
-            //      kitCore   : "com.52inc:52Kit-core:${ftKit}"
-
-            slide     : 'com.hkm.loyalslider:library:1.8.5'      ,
+            slide     : 'com.hkm.loyalslider:library:1.8.5',
             webview   : 'com.hkm.ezwebview:ezwebviewv:1.3.6'
     ]
 

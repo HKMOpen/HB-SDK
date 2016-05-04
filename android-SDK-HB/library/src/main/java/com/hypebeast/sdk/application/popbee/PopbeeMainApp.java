@@ -69,12 +69,22 @@ public class PopbeeMainApp extends ApplicationBase {
     }
 
     private Task<Void> checkconfigurationoverhead() {
-        TaskCompletionSource<Void> tks = new TaskCompletionSource<>();
+        final TaskCompletionSource<Void> tks = new TaskCompletionSource<>();
         if (configuration == null) {
             try {
                 postrequest = client.createPostsFeed();
-                configuration = postrequest.mobile_config();
-                tks.setResult(null);
+                postrequest.mobile_config(new Callback<PBmobileConfig>() {
+                    @Override
+                    public void success(PBmobileConfig pBmobileConfig, Response response) {
+                        configuration = pBmobileConfig;
+                        tks.setResult(null);
+                    }
+
+                    @Override
+                    public void failure(RetrofitError error) {
+                        tks.setError(error);
+                    }
+                });
             } catch (ApiException e) {
                 tks.setError(e);
             }
@@ -154,11 +164,11 @@ public class PopbeeMainApp extends ApplicationBase {
 
     @Override
     protected void removeAllData() {
-        CacheManager.trimCache(app);
+        //CacheManager.trimCache(app);
         saveInfo(PREFERENCE_FOUNDATION_FILE_CONTENT, "");
         saveInfo(PREFERENCE_BRAND_LIST, "");
         saveInfo(PREFERENCE_FOUNDATION_REGISTRATION, "");
-        if(client==null)return;
+        if (client == null) return;
         client.removeAllCache();
     }
 }
