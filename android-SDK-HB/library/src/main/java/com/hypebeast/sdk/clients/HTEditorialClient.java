@@ -61,7 +61,7 @@ public class HTEditorialClient extends Client {
     public static final String ISO_FORMAT5 = "yyyy-MM-dd'T'HH:mm:ssZ";
     private hTrak interfaceHTrak;
 
-    private static HTEditorialClient static_instance;
+    private volatile static HTEditorialClient static_instance;
 
 
     public static HTEditorialClient newInstance() {
@@ -70,21 +70,29 @@ public class HTEditorialClient extends Client {
 
     @Deprecated
     public static HTEditorialClient getInstance() {
-        if (static_instance == null) {
-            static_instance = new HTEditorialClient();
-            return static_instance;
-        } else {
-            return static_instance;
+        HTEditorialClient local = static_instance;
+        if (local == null) {
+            synchronized (HTEditorialClient.class) {
+                local = static_instance;
+                if (local == null) {
+                    static_instance = local = new HTEditorialClient();
+                }
+            }
         }
+        return local;
     }
 
     public static HTEditorialClient getInstance(Application context) {
-        if (static_instance == null) {
-            static_instance = new HTEditorialClient(context);
-            return static_instance;
-        } else {
-            return static_instance;
+        HTEditorialClient local = static_instance;
+        if (local == null) {
+            synchronized (HTEditorialClient.class) {
+                local = static_instance;
+                if (local == null) {
+                    static_instance = local = new HTEditorialClient(context);
+                }
+            }
         }
+        return local;
     }
 
     @Override

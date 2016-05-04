@@ -49,7 +49,7 @@ public class HBEditorialClient extends Client {
      * login adapter
      */
     private RestAdapter mLoginAdapter;
-    private static HBEditorialClient static_instance;
+    private volatile static HBEditorialClient static_instance;
     private syncBookmark bookmark_instance;
     private DisqusComment dis_comment_instance;
 
@@ -60,12 +60,16 @@ public class HBEditorialClient extends Client {
     }
 
     public static HBEditorialClient getInstance(Context c) {
-        if (static_instance == null) {
-            static_instance = new HBEditorialClient(c);
-            return static_instance;
-        } else {
-            return static_instance;
+        HBEditorialClient local = static_instance;
+        if (local == null) {
+            synchronized (HBEditorialClient.class) {
+                local = static_instance;
+                if (local == null) {
+                    static_instance = local = new HBEditorialClient(c);
+                }
+            }
         }
+        return local;
     }
 
 

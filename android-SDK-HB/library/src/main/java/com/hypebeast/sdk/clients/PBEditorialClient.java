@@ -6,8 +6,10 @@ import android.os.Build;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.hypebeast.sdk.Util.UrlCache;
+import com.hypebeast.sdk.api.gson.AnnotationExclusionStrategy;
 import com.hypebeast.sdk.api.gson.GsonFactory;
 import com.hypebeast.sdk.api.gson.RealmExclusion;
 import com.hypebeast.sdk.api.gson.WordpressConversion;
@@ -29,6 +31,7 @@ import retrofit.converter.GsonConverter;
 
 import static com.hypebeast.sdk.Constants.APP_FOLDER_NAME;
 import static com.hypebeast.sdk.Constants.PREFERENCE_CSS_FILE_CONTENT;
+import static com.hypebeast.sdk.Constants.refresh;
 
 /**
  * Created by hesk on 3/7/15.
@@ -49,7 +52,7 @@ public class PBEditorialClient extends Client {
     public static final String ISO_FORMAT4 = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
     public static final String ISO_FORMAT5 = "yyyy-MM-dd'T'HH:mm:ssZ";
 
-    private static PBEditorialClient static_instance;
+    private volatile static PBEditorialClient static_instance;
 
 
     public static PBEditorialClient newInstance() {
@@ -58,21 +61,29 @@ public class PBEditorialClient extends Client {
 
     @Deprecated
     public static PBEditorialClient getInstance() {
-        if (static_instance == null) {
-            static_instance = new PBEditorialClient();
-            return static_instance;
-        } else {
-            return static_instance;
+        PBEditorialClient local = static_instance;
+        if (local == null) {
+            synchronized (PBEditorialClient.class) {
+                local = static_instance;
+                if (local == null) {
+                    static_instance = local = new PBEditorialClient();
+                }
+            }
         }
+        return local;
     }
 
     public static PBEditorialClient getInstance(Application context) {
-        if (static_instance == null) {
-            static_instance = new PBEditorialClient(context);
-            return static_instance;
-        } else {
-            return static_instance;
+        PBEditorialClient local = static_instance;
+        if (local == null) {
+            synchronized (PBEditorialClient.class) {
+                local = static_instance;
+                if (local == null) {
+                    static_instance = local = new PBEditorialClient(context);
+                }
+            }
         }
+        return local;
     }
 
     @Override
@@ -86,6 +97,9 @@ public class PBEditorialClient extends Client {
                 .build();
     }
 
+    public Gson gson() {
+        return gsonsetup;
+    }
 
     @Override
     protected void jsonCreate() {
@@ -93,8 +107,9 @@ public class PBEditorialClient extends Client {
                 .setDateFormat(DATE_FORMAT)
                 .setExclusionStrategies(new RealmExclusion())
                 .registerTypeAdapterFactory(new GsonFactory.NullStringToEmptyAdapterFactory())
-                        //  .registerTypeAdapter(String.class, new MissingCharacterConversion())
-                        // .registerTypeAdapter(String.class, new WordpressConversion())
+                .addDeserializationExclusionStrategy(new AnnotationExclusionStrategy())
+                //  .registerTypeAdapter(String.class, new MissingCharacterConversion())
+                // .registerTypeAdapter(String.class, new WordpressConversion())
                 .create();
     }
 

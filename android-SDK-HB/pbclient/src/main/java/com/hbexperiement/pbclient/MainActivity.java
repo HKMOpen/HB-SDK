@@ -2,6 +2,7 @@ package com.hbexperiement.pbclient;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
@@ -43,7 +44,6 @@ public class MainActivity extends Splash {
         });
     }
 
-
     @Override
     protected int getLayoutId() {
         return R.layout.splash;
@@ -71,6 +71,8 @@ public class MainActivity extends Splash {
                     @Override
                     public void run() {
                         finish();
+                        Intent h = new Intent(MainActivity.this, sampleLoad.class);
+                        startActivity(h);
                     }
                 });
             }

@@ -62,7 +62,7 @@ public class HBStoreApiClient extends Client {
      * login adapter
      */
     private RestAdapter mLoginAdapter;
-    private static HBStoreApiClient static_instance;
+    private volatile static HBStoreApiClient static_instance;
     private ConfigurationSync data;
     private WishlistSync mWishlist;
     protected WishlistSync.syncResult sync_result_wishlist;
@@ -78,22 +78,29 @@ public class HBStoreApiClient extends Client {
 
     @Deprecated
     public static HBStoreApiClient getInstance() {
-        if (static_instance == null) {
-            static_instance = newInstance();
-            return static_instance;
-        } else {
-            return static_instance;
+        HBStoreApiClient local = static_instance;
+        if (local == null) {
+            synchronized (HBStoreApiClient.class) {
+                local = static_instance;
+                if (local == null) {
+                    static_instance = local = new HBStoreApiClient();
+                }
+            }
         }
+        return local;
     }
 
     public static HBStoreApiClient getInstance(Context context) {
-        if (static_instance == null) {
-            static_instance = newInstance(context);
-            return static_instance;
-        } else {
-            static_instance.setContext(context);
-            return static_instance;
+        HBStoreApiClient local = static_instance;
+        if (local == null) {
+            synchronized (HBStoreApiClient.class) {
+                local = static_instance;
+                if (local == null) {
+                    static_instance = local = new HBStoreApiClient(context);
+                }
+            }
         }
+        return local;
     }
 
     /**
@@ -128,7 +135,7 @@ public class HBStoreApiClient extends Client {
         gsonsetup = new GsonBuilder()
                 .setDateFormat(Constants.DATE_FORMAT)
                 .registerTypeAdapterFactory(new GsonFactory.NullStringToEmptyAdapterFactory())
-                        //.registerTypeAdapter(String.class, new WordpressConversion())
+                //.registerTypeAdapter(String.class, new WordpressConversion())
                 .setExclusionStrategies(new RealmExclusion())
                 .create();
     }
