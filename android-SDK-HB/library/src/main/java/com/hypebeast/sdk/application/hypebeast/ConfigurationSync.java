@@ -104,7 +104,7 @@ public class ConfigurationSync extends ApplicationBase {
             @Override
             public Task<Void> then(Task<String> task) throws Exception {
                 ArrayList<Task<Void>> tasks = new ArrayList<Task<Void>>();
-                tasks.add(setCssFile(ACCESS_FILE_URL, local_css_file_name));
+                //tasks.add(setCssFile(ACCESS_FILE_URL, local_css_file_name));
                 return Task.whenAll(tasks);
             }
         }).onSuccess(new Continuation<Void, Void>() {
